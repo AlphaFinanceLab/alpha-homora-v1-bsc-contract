@@ -23,9 +23,12 @@ def main():
     wbnb = interface.IAny('0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c')
     chef = '0x73feaa1ee314f8c655e354234017be2193c9e24e'
     router = '0x05ff2b0db69458a0750badebc4f9e13add608c7f'  # pancake router
+    lp = interface.IAny('0xA527a61703D82139F8a06Bc30097cC9CAA2df5A6')
+    r0, r1, _ = lp.getReserves()
+    cake_price = r1 * 10**18 // r0  # in bnb
 
     oracle = SimplePriceOracle.deploy({'from': admin})
-    oracle.setPrices([cake], [wbnb], [10**18 * 13 // 234], {'from': admin})
+    oracle.setPrices([cake], [wbnb], [cake_price], {'from': admin})
 
     # strats
     add_strat = StrategyAllBNBOnly.deploy(router, {'from': admin})
@@ -77,7 +80,7 @@ def main():
     print('alice pos', bank.positionInfo(1))
 
     pos_health, pos_debt = bank.positionInfo(1)
-    assert almostEqual(pos_health, 10 ** 18), 'position health should be ~1 BNB (swap fee 0.2%)'
+    assert almostEqual(pos_health, deposit_amt), 'position health should be ~1 BNB (swap fee 0.2%)'
     assert pos_debt == 0, 'position debt should be 0'
 
     ############################################################
@@ -100,6 +103,57 @@ def main():
 
     pos_health, pos_debt = bank.positionInfo(2)
     assert almostEqual(curBNBBal - prevBNBBal, -deposit_amt), 'incorrect deposit amt'
-    assert almostEqual(pos_debt, 100 * 10**18), 'debt != borrow amount'
+    assert almostEqual(pos_debt, borrow_amt), 'debt != borrow amount'
     assert almostEqual(pos_health, deposit_amt +
                        borrow_amt), 'position health should be ~ deposited + borrow amt'
+
+    ###########################################################
+    # work (no borrow) with cake
+    print('==============================================================')
+    print('Case 1. work (no borrow) with CAKE')
+
+    deposit_amt = 10**18
+    cake_amt = 2 * 10**18
+
+    prevBNBBal = alice.balance()
+
+    bank.work(0, goblin, 0, 0, eth_abi.encode_abi(['address', 'bytes'], [
+              add_strat_2.address, eth_abi.encode_abi(['address', 'uint256', 'uint256'], [cake.address, cake_amt, 0])]), {'from': alice, 'value': deposit_amt})
+
+    curBNBBal = alice.balance()
+
+    print('∆ bnb alice', curBNBBal - prevBNBBal)
+    print('alice pos', bank.positionInfo(1))
+
+    pos_health, pos_debt = bank.positionInfo(1)
+    assert almostEqual(pos_health, deposit_amt + cake_amt /
+                       cake_price), 'position health should be ~1 BNB (swap fee 0.2%)'
+    assert pos_debt == 0, 'position debt should be 0'
+
+    ############################################################
+    # work (borrow) with cake
+    print('==============================================================')
+    print('Case 2. work 2x (borrow) with CAKE')
+
+    deposit_amt = 100 * 10**18
+    borrow_amt = 100 * 10**18
+    cake_amt = 200 * 10**18
+
+    prevBNBBal = alice.balance()
+    prevCakeBal = cake.balanceof(alice)
+
+    bank.work(0, goblin, borrow_amt, 0, eth_abi.encode_abi(['address', 'bytes'], [
+              add_strat_2.address, eth_abi.encode_abi(['address', 'uint256', 'uint256'], [cake.address, cake_amt, 0])]), {'from': alice, 'value': deposit_amt})
+
+    curBNBBal = alice.balance()
+    curCakeBal = cake.balanceOf(alice)
+
+    print('∆ bnb alice', curBNBBal - prevBNBBal)
+    print('∆ cake alice', curCakeBal - prevCakeBal)
+    print('alice pos', bank.positionInfo(2))
+
+    pos_health, pos_debt = bank.positionInfo(2)
+    assert almostEqual(curBNBBal - prevBNBBal, -deposit_amt), 'incorrect deposit amt'
+    assert almostEqual(pos_debt, borrow_amt), 'debt != input + borrow'
+    assert almostEqual(pos_health, deposit_amt +
+                       borrow_amt + cake_amt / cake_price), 'position health should be ~ deposited + borrow amt'
