@@ -1,5 +1,5 @@
 pragma solidity 0.5.16;
-import "./IWETH.sol";
+import "./IWBNB.sol";
 
 // Copyright (C) 2015, 2016, 2017 Dapphub
 
@@ -18,9 +18,9 @@ import "./IWETH.sol";
 
 // pragma solidity ^0.4.18;
 
-contract WETH is IWETH {
+contract WBNB is IWBNB {
     string public name = "Wrapped Ether";
-    string public symbol = "WETH";
+    string public symbol = "WBNB";
     uint8 public decimals = 18;
 
     event Approval(address indexed src, address indexed guy, uint256 wad);

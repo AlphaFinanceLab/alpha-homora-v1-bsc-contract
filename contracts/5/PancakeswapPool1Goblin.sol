@@ -2,7 +2,7 @@ pragma solidity 0.5.16;
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/ownership/Ownable.sol';
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/math/SafeMath.sol';
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/utils/ReentrancyGuard.sol';
-import 'Synthetixio/synthetix@2.28.4-beta/contracts/interfaces/IStakingRewards.sol';
+import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/token/ERC20/IERC20.sol';
 import 'Uniswap/uniswap-v2-core@1.0.1/contracts/interfaces/IUniswapV2Factory.sol';
 import 'Uniswap/uniswap-v2-core@1.0.1/contracts/interfaces/IUniswapV2Pair.sol';
 import 'Uniswap/uniswap-v2-core@1.0.1/contracts/libraries/Math.sol';
@@ -10,8 +10,11 @@ import './uniswap/IUniswapV2Router02.sol';
 import './Strategy.sol';
 import './SafeToken.sol';
 import './Goblin.sol';
+import './interfaces/IMasterChef.sol';
 
-contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
+// PancakeswapPool12Goblin is specific for CAKE-BNB pool in Pancakeswap.
+// In this case, fToken = CAKE and pid = 1.
+contract PancakeswapPool1Goblin is Ownable, ReentrancyGuard, Goblin {
   /// @notice Libraries
   using SafeToken for address;
   using SafeMath for uint;
@@ -23,14 +26,14 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
   event Liquidate(uint indexed id, uint wad);
 
   /// @notice Immutable variables
-  IStakingRewards public staking;
+  IMasterChef public masterChef;
   IUniswapV2Factory public factory;
   IUniswapV2Router02 public router;
   IUniswapV2Pair public lpToken;
   address public wbnb;
-  address public fToken;
-  address public uni;
+  address public cake;
   address public operator;
+  uint public constant pid = 12;
 
   /// @notice Mutable state variables
   mapping(uint => uint) public shares;
@@ -42,31 +45,28 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
 
   constructor(
     address _operator,
-    IStakingRewards _staking,
+    IMasterChef _masterChef,
     IUniswapV2Router02 _router,
-    address _fToken,
-    address _uni,
     Strategy _addStrat,
     Strategy _liqStrat,
     uint _reinvestBountyBps
   ) public {
     operator = _operator;
     wbnb = _router.WETH();
-    staking = _staking;
+    masterChef = _masterChef;
     router = _router;
     factory = IUniswapV2Factory(_router.factory());
-    lpToken = IUniswapV2Pair(factory.getPair(wbnb, _fToken));
-    fToken = _fToken;
-    uni = _uni;
+    (IERC20 _lpToken, , , ) = masterChef.poolInfo(pid);
+    lpToken = IUniswapV2Pair(address(_lpToken));
+    cake = address(masterChef.cake());
     addStrat = _addStrat;
     liqStrat = _liqStrat;
     okStrats[address(addStrat)] = true;
     okStrats[address(liqStrat)] = true;
     reinvestBountyBps = _reinvestBountyBps;
-    lpToken.approve(address(_staking), uint(-1)); // 100% trust in the staking pool
+    lpToken.approve(address(_masterChef), uint(-1)); // 100% trust in the staking pool
     lpToken.approve(address(router), uint(-1)); // 100% trust in the router
-    _fToken.safeApprove(address(router), uint(-1)); // 100% trust in the router
-    _uni.safeApprove(address(router), uint(-1)); // 100% trust in the router
+    cake.safeApprove(address(router), uint(-1)); // 100% trust in the router
   }
 
   /// @dev Require that the caller must be an EOA account to avoid flash loans.
@@ -85,7 +85,7 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
   /// @param share The number of shares to be converted to LP balance.
   function shareToBalance(uint share) public view returns (uint) {
     if (totalShare == 0) return share; // When there's no share, 1 share = 1 balance.
-    uint totalBalance = staking.balanceOf(address(this));
+    (uint totalBalance, ) = masterChef.userInfo(pid, address(this));
     return share.mul(totalBalance).div(totalShare);
   }
 
@@ -93,28 +93,25 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
   /// @param balance the number of LP tokens to be converted to shares.
   function balanceToShare(uint balance) public view returns (uint) {
     if (totalShare == 0) return balance; // When there's no share, 1 share = 1 balance.
-    uint totalBalance = staking.balanceOf(address(this));
+    (uint totalBalance, ) = masterChef.userInfo(pid, address(this));
     return balance.mul(totalShare).div(totalBalance);
   }
 
   /// @dev Re-invest whatever this worker has earned back to staked LP tokens.
   function reinvest() public onlyEOA nonReentrant {
     // 1. Withdraw all the rewards.
-    staking.getReward();
-    uint reward = uni.myBalance();
+    masterChef.withdraw(pid, 0);
+    uint reward = cake.balanceOf(address(this));
     if (reward == 0) return;
     // 2. Send the reward bounty to the caller.
     uint bounty = reward.mul(reinvestBountyBps) / 10000;
-    uni.safeTransfer(msg.sender, bounty);
-    // 3. Convert all the remaining rewards to BNB.
-    address[] memory path = new address[](2);
-    path[0] = address(uni);
-    path[1] = address(wbnb);
-    router.swapExactTokensForETH(reward.sub(bounty), 0, path, address(this), now);
-    // 4. Use add BNB strategy to convert all BNB to LP tokens.
-    addStrat.execute.value(address(this).balance)(address(0), 0, abi.encode(fToken, 0));
-    // 5. Mint more LP tokens and stake them for more rewards.
-    staking.stake(lpToken.balanceOf(address(this)));
+    cake.safeTransfer(msg.sender, bounty);
+    // 3. Use add Two-side optimal strategy to convert cake to BNB and add
+    // liquidity to get LP tokens.
+    cake.safeTransfer(address(addStrat), reward.sub(bounty));
+    addStrat.execute(address(this), 0, abi.encode(cake, 0, 0));
+    // 4. Mint more LP tokens and stake them for more rewards.
+    masterChef.deposit(pid, lpToken.balanceOf(address(this)));
     emit Reinvest(msg.sender, reward, bounty);
   }
 
@@ -167,13 +164,13 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
     uint lpSupply = lpToken.totalSupply(); // Ignore pending mintFee as it is insignificant
     // 2. Get the pool's total supply of WBNB and farming token.
     (uint r0, uint r1, ) = lpToken.getReserves();
-    (uint totalWBNB, uint totalfToken) = lpToken.token0() == wbnb ? (r0, r1) : (r1, r0);
+    (uint totalWBNB, uint totalPancake) = lpToken.token0() == wbnb ? (r0, r1) : (r1, r0);
     // 3. Convert the position's LP tokens to the underlying assets.
     uint userWBNB = lpBalance.mul(totalWBNB).div(lpSupply);
-    uint userfToken = lpBalance.mul(totalfToken).div(lpSupply);
+    uint userPancake = lpBalance.mul(totalPancake).div(lpSupply);
     // 4. Convert all farming tokens to BNB and return total BNB.
     return
-      getMktSellAmount(userfToken, totalfToken.sub(userfToken), totalWBNB.sub(userWBNB)).add(
+      getMktSellAmount(userPancake, totalPancake.sub(userPancake), totalWBNB.sub(userWBNB)).add(
         userWBNB
       );
   }
@@ -184,7 +181,7 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
     // 1. Convert the position back to LP tokens and use liquidate strategy.
     _removeShare(id);
     lpToken.transfer(address(liqStrat), lpToken.balanceOf(address(this)));
-    liqStrat.execute(address(0), 0, abi.encode(fToken, 0));
+    liqStrat.execute(address(0), 0, abi.encode(cake, 0));
     // 2. Return all available BNB back to the operator.
     uint wad = address(this).balance;
     SafeToken.safeTransferBNB(msg.sender, wad);
@@ -194,9 +191,10 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
   /// @dev Internal function to stake all outstanding LP tokens to the given position ID.
   function _addShare(uint id) internal {
     uint balance = lpToken.balanceOf(address(this));
+
     if (balance > 0) {
       uint share = balanceToShare(balance);
-      staking.stake(balance);
+      masterChef.deposit(pid, balance);
       shares[id] = shares[id].add(share);
       totalShare = totalShare.add(share);
       emit AddShare(id, share);
@@ -208,7 +206,7 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
     uint share = shares[id];
     if (share > 0) {
       uint balance = shareToBalance(share);
-      staking.withdraw(balance);
+      masterChef.withdraw(pid, balance);
       totalShare = totalShare.sub(share);
       shares[id] = 0;
       emit RemoveShare(id, share);
