@@ -38,6 +38,7 @@ def main():
 
     # new strat
     add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router, goblin, {'from': admin})
+    goblin.setStrategyOk([add_strat_2], True, {'from': admin})
 
     # mint tokens
     mint_tokens(cake, alice)
