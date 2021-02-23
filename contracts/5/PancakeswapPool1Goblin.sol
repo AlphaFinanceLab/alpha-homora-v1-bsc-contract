@@ -33,7 +33,7 @@ contract PancakeswapPool1Goblin is Ownable, ReentrancyGuard, Goblin {
   address public wbnb;
   address public cake;
   address public operator;
-  uint public constant pid = 12;
+  uint public constant pid = 1;
 
   /// @notice Mutable state variables
   mapping(uint => uint) public shares;
@@ -150,7 +150,7 @@ contract PancakeswapPool1Goblin is Ownable, ReentrancyGuard, Goblin {
   ) public pure returns (uint) {
     if (aIn == 0) return 0;
     require(rIn > 0 && rOut > 0, 'bad reserve values');
-    uint aInWithFee = aIn.mul(997);
+    uint aInWithFee = aIn.mul(998);
     uint numerator = aInWithFee.mul(rOut);
     uint denominator = rIn.mul(1000).add(aInWithFee);
     return numerator / denominator;

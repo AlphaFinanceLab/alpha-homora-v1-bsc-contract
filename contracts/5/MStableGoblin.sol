@@ -148,7 +148,7 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
   ) public pure returns (uint) {
     if (aIn == 0) return 0;
     require(rIn > 0 && rOut > 0, 'bad reserve values');
-    uint aInWithFee = aIn.mul(997);
+    uint aInWithFee = aIn.mul(998);
     uint numerator = aInWithFee.mul(rOut);
     uint denominator = rIn.mul(1000).add(aInWithFee);
     return numerator / denominator;

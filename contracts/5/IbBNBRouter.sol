@@ -171,8 +171,8 @@ contract IbBNBRouter is Ownable {
   ) internal pure returns (uint) {
     require(amtA.mul(resB) >= amtB.mul(resA), 'Reversed');
 
-    uint a = 997;
-    uint b = uint(1997).mul(resA);
+    uint a = 998;
+    uint b = uint(1998).mul(resA);
     uint _c = (amtA.mul(resB)).sub(amtB.mul(resA));
     uint c = _c.mul(1000).div(amtB.add(resB)).mul(resA);
 

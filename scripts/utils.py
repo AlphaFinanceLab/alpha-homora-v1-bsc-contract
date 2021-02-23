@@ -4,8 +4,12 @@ try:
 except:
     pass
 
-CAKE = '0xa1c8dff968533b1b2bbadf14e84a211531d57c34'
+CAKE = '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82'
 WBNB = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c'
+
+
+def almostEqual(a, b, thresh=0.01):
+    return a <= b + thresh * abs(b) and a >= b - thresh * abs(b)
 
 
 def mint_tokens(token, to, interface=None, amount=None):

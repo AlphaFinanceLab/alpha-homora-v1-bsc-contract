@@ -61,6 +61,19 @@ interface IAny {
 
   function token1() external view returns (address);
 
+  function getReserves()
+    external
+    view
+    returns (
+      uint,
+      uint,
+      uint
+    );
+
+  function totalSupply() external view returns (uint);
+
+  function balanceOf(address) external view returns (uint);
+
   function symbol() external view returns (string memory);
 
   function getFinalTokens() external view returns (address[] memory);

@@ -40,7 +40,7 @@ contract StrategyAllBNBOnly is Ownable, ReentrancyGuard, Strategy {
     (uint r0, uint r1, ) = lpToken.getReserves();
     uint rIn = lpToken.token0() == wbnb ? r0 : r1;
     uint aIn =
-      Math.sqrt(rIn.mul(balance.mul(3988000).add(rIn.mul(3988009)))).sub(rIn.mul(1997)) / 1994;
+      Math.sqrt(rIn.mul(balance.mul(3992000).add(rIn.mul(3992004)))).sub(rIn.mul(1998)) / 1994;
     // 3. Convert that portion of BNB to farming tokens.
     address[] memory path = new address[](2);
     path[0] = wbnb;
