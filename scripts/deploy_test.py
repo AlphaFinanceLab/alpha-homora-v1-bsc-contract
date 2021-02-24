@@ -18,7 +18,7 @@ def main():
         2 * 10**17, 1000, 500, triple_slope_model, {'from': admin})
     bank = Bank.deploy(bank_config, {'from': admin})
 
-    cake = interface.IAny('0xa1c8dff968533b1b2bbadf14e84a211531d57c34')
+    cake = interface.IAny('0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82')
     wbnb = interface.IAny('0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c')
     chef = '0x73feaa1ee314f8c655e354234017be2193c9e24e'
     router = '0x05ff2b0db69458a0750badebc4f9e13add608c7f'  # pancake router
