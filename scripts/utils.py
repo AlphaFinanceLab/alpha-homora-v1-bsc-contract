@@ -19,7 +19,7 @@ def mint_tokens(token, to, interface=None, amount=None):
     token = interface.IAny(token)
     if amount is None:
         # default is 1M tokens
-        amount = 10**3 * 10**token.decimals()
+        amount = 10**12 * 10**token.decimals()
 
     if token == CAKE:
         owner = token.owner()
