@@ -21,6 +21,7 @@ def deploy(bank_config, bank, oracle, add_strat, liq_strat, rem_strat, goblin_co
             "pool": pool,
             "goblin": goblin,
         })
+    return res
 
 
 def main():
@@ -53,7 +54,10 @@ def main():
     # max price diff 10%
     goblin_config = PancakeswapGoblinConfig.deploy(oracle, {'from': admin})
     
-    deploy(bank_config, bank, oracle, add_strat, liq_strat, rem_strat, goblin_config)
+    res = deploy(bank_config, bank, oracle, add_strat, liq_strat, rem_strat, goblin_config)
+
+    for i in res:
+        print(i['pool']['name'], i['goblin'].address)
 
     bank.deposit({
         "from": admin,
