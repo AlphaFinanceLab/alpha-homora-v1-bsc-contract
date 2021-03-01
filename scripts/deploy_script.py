@@ -60,6 +60,7 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
         bank_config.setGoblins([goblin], [goblin_config], {'from': deployer})
 
         registry[pool['name']] = {'goblin': goblin, 'two_side': add_strat_2}
+
     # set oracle prices
     oracle.setPrices(tokens, [wbnb] * len(tokens), prices, {'from': deployer})
 
@@ -143,14 +144,14 @@ def main():
             'token': cake_address,
             'lp': cake_lp_address,
             'pid': 1,
-            'goblinConfig': [True, 7250, 8000, 11000]
+            'goblinConfig': [True, 7250, 8000, 100000]
         },
         {
             'name': 'busd',
             'token': busd_address,
             'lp': busd_lp_address,
             'pid': 2,
-            'goblinConfig': [True, 7250, 8000, 11000]
+            'goblinConfig': [True, 7250, 8000, 100000]
         }]
 
     # deploy pools
