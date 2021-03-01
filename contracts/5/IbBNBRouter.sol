@@ -138,7 +138,7 @@ contract IbBNBRouter is Ownable {
 
   /// @dev Compute optimal deposit amount
   /// @param amtA amount of token A desired to deposit
-  /// @param amtB amonut of token B desired to deposit
+  /// @param amtB amount of token B desired to deposit
   /// @param resA amount of token A in reserve
   /// @param resB amount of token B in reserve
   /// (forked from ./StrategyAddTwoSidesOptimal.sol)
@@ -159,7 +159,7 @@ contract IbBNBRouter is Ownable {
 
   /// @dev Compute optimal deposit amount helper
   /// @param amtA amount of token A desired to deposit
-  /// @param amtB amonut of token B desired to deposit
+  /// @param amtB amount of token B desired to deposit
   /// @param resA amount of token A in reserve
   /// @param resB amount of token B in reserve
   /// (forked from ./StrategyAddTwoSidesOptimal.sol)
