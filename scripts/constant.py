@@ -30,88 +30,88 @@ ltc_lp_address = '0xBc765Fd113c5bDB2ebc25F711191B56bB8690aec'
 front_lp_address = '0x36b7D2e5C7877392Fb17f9219efaD56F3D794700'
 
 pools = [
-  {
-    "name":"cake",
-    "token":cake_address,
-    "lp": cake_lp_address,
-    "pid":1,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"busd",
-    "token":busd_address,
-    "lp": busd_lp_address,
-    "pid":2,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"btcb",
-    "token":btcb_address,
-    "lp": btcb_lp_address,
-    "pid":15,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"eth",
-    "token":eth_address,
-    "lp": eth_lp_address,
-    "pid":14,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"usdt",
-    "token":usdt_address,
-    "lp": usdt_lp_address,
-    "pid":17,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"uni",
-    "token":uni_address,
-    "lp": uni_lp_address,
-    "pid":25,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"link",
-    "token":link_address,
-    "lp": link_lp_address,
-    "pid":7,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"band",
-    "token":band_address,
-    "lp": band_lp_address,
-    "pid":4,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"yfi",
-    "token":yfi_address,
-    "lp": yfi_lp_address,
-    "pid":24,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
-  {
-    "name":"alpha",
-    "token":alpha_address,
-    "lp": alpha_lp_address,
-    "pid":16,
-    "goblinConfig":[True, 6250, 7000, 11000]
-  },
-  {
-    "name":"ltc",
-    "token":ltc_address,
-    "lp": ltc_lp_address,
-    "pid":54,
-    "goblinConfig":[True, 5500, 6000, 11000]
-  },
-  {
-    "name":"front",
-    "token":front_address,
-    "lp": front_lp_address,
-    "pid":57,
-    "goblinConfig":[True, 7250, 8000, 11000]
-  },
+    {
+        "name": "cake",
+        "token": cake_address,
+        "lp": cake_lp_address,
+        "pid": 1,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "busd",
+        "token": busd_address,
+        "lp": busd_lp_address,
+        "pid": 2,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "btcb",
+        "token": btcb_address,
+        "lp": btcb_lp_address,
+        "pid": 15,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "eth",
+        "token": eth_address,
+        "lp": eth_lp_address,
+        "pid": 14,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "usdt",
+        "token": usdt_address,
+        "lp": usdt_lp_address,
+        "pid": 17,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "uni",
+        "token": uni_address,
+        "lp": uni_lp_address,
+        "pid": 25,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "link",
+        "token": link_address,
+        "lp": link_lp_address,
+        "pid": 7,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "band",
+        "token": band_address,
+        "lp": band_lp_address,
+        "pid": 4,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "yfi",
+        "token": yfi_address,
+        "lp": yfi_lp_address,
+        "pid": 24,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
+    {
+        "name": "alpha",
+        "token": alpha_address,
+        "lp": alpha_lp_address,
+        "pid": 16,
+        "goblinConfig": [True, 6250, 7000, 11000]
+    },
+    {
+        "name": "ltc",
+        "token": ltc_address,
+        "lp": ltc_lp_address,
+        "pid": 54,
+        "goblinConfig": [True, 5500, 6000, 11000]
+    },
+    {
+        "name": "front",
+        "token": front_address,
+        "lp": front_lp_address,
+        "pid": 57,
+        "goblinConfig": [True, 7250, 8000, 11000]
+    },
 ]

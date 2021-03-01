@@ -1,6 +1,6 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapGoblin,
-                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig)
+                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapPool1Goblin)
 from .utils import *
 import eth_abi
 from .constant import *
@@ -15,11 +15,15 @@ def deploy_goblin(admin, pools, bank_config, bank, oracle, add_strat, liq_strat,
         price = (10**18 * wbnb.balanceOf(pool["lp"])) // fToken.balanceOf(pool["lp"])
         oracle.setPrices([fToken], [wbnb], [price], {'from': admin})
 
-        goblin = PancakeswapGoblin.deploy(
-            bank, chef_address, router_address, pool["pid"], add_strat, liq_strat, 300, {'from': admin})
+        if pool['pid'] == 1:
+            goblin = PancakeswapPool1Goblin.deploy(
+                bank, chef_address, router_address, add_strat, liq_strat, 300, {'from': admin})
+        else:
+            goblin = PancakeswapGoblin.deploy(
+                bank, chef_address, router_address, pool['pid'], add_strat, liq_strat, 300, {'from': admin})
         goblin_config.setConfigs([goblin], [pool["goblinConfig"]], {'from': admin})
         add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router_address, goblin, {'from': admin})
-        goblin.setStrategyOk([add_strat_2], True, {'from': admin})
+        goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': admin})
         bank_config.setGoblins([goblin], [goblin_config], {'from': admin})
 
         res.append({
