@@ -13,12 +13,12 @@ interface IERC20 {
   /**
    * @dev Returns the amount of tokens in existence.
    */
-  function totalSupply() external view returns (uint256);
+  function totalSupply() external view returns (uint);
 
   /**
    * @dev Returns the amount of tokens owned by `account`.
    */
-  function balanceOf(address account) external view returns (uint256);
+  function balanceOf(address account) external view returns (uint);
 
   /**
    * @dev Moves `amount` tokens from the caller's account to `recipient`.
@@ -27,7 +27,7 @@ interface IERC20 {
    *
    * Emits a {Transfer} event.
    */
-  function transfer(address recipient, uint256 amount) external returns (bool);
+  function transfer(address recipient, uint amount) external returns (bool);
 
   /**
    * @dev Returns the remaining number of tokens that `spender` will be
@@ -36,7 +36,7 @@ interface IERC20 {
    *
    * This value changes when {approve} or {transferFrom} are called.
    */
-  function allowance(address owner, address spender) external view returns (uint256);
+  function allowance(address owner, address spender) external view returns (uint);
 
   /**
    * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -52,7 +52,7 @@ interface IERC20 {
    *
    * Emits an {Approval} event.
    */
-  function approve(address spender, uint256 amount) external returns (bool);
+  function approve(address spender, uint amount) external returns (bool);
 
   /**
    * @dev Moves `amount` tokens from `sender` to `recipient` using the
@@ -66,7 +66,7 @@ interface IERC20 {
   function transferFrom(
     address sender,
     address recipient,
-    uint256 amount
+    uint amount
   ) external returns (bool);
 
   /**
@@ -75,13 +75,13 @@ interface IERC20 {
    *
    * Note that `value` may be zero.
    */
-  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Transfer(address indexed from, address indexed to, uint value);
 
   /**
    * @dev Emitted when the allowance of a `spender` for an `owner` is set by
    * a call to {approve}. `value` is the new allowance.
    */
-  event Approval(address indexed owner, address indexed spender, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint value);
 }
 
 // File: @openzeppelin/contracts/math/SafeMath.sol
@@ -112,8 +112,8 @@ library SafeMath {
    *
    * - Addition cannot overflow.
    */
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a + b;
+  function add(uint a, uint b) internal pure returns (uint) {
+    uint c = a + b;
     require(c >= a, 'SafeMath: addition overflow');
 
     return c;
@@ -129,7 +129,7 @@ library SafeMath {
    *
    * - Subtraction cannot overflow.
    */
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+  function sub(uint a, uint b) internal pure returns (uint) {
     return sub(a, b, 'SafeMath: subtraction overflow');
   }
 
@@ -144,12 +144,12 @@ library SafeMath {
    * - Subtraction cannot overflow.
    */
   function sub(
-    uint256 a,
-    uint256 b,
+    uint a,
+    uint b,
     string memory errorMessage
-  ) internal pure returns (uint256) {
+  ) internal pure returns (uint) {
     require(b <= a, errorMessage);
-    uint256 c = a - b;
+    uint c = a - b;
 
     return c;
   }
@@ -164,7 +164,7 @@ library SafeMath {
    *
    * - Multiplication cannot overflow.
    */
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+  function mul(uint a, uint b) internal pure returns (uint) {
     // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
     // benefit is lost if 'b' is also tested.
     // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
@@ -172,7 +172,7 @@ library SafeMath {
       return 0;
     }
 
-    uint256 c = a * b;
+    uint c = a * b;
     require(c / a == b, 'SafeMath: multiplication overflow');
 
     return c;
@@ -190,7 +190,7 @@ library SafeMath {
    *
    * - The divisor cannot be zero.
    */
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+  function div(uint a, uint b) internal pure returns (uint) {
     return div(a, b, 'SafeMath: division by zero');
   }
 
@@ -207,12 +207,12 @@ library SafeMath {
    * - The divisor cannot be zero.
    */
   function div(
-    uint256 a,
-    uint256 b,
+    uint a,
+    uint b,
     string memory errorMessage
-  ) internal pure returns (uint256) {
+  ) internal pure returns (uint) {
     require(b > 0, errorMessage);
-    uint256 c = a / b;
+    uint c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
 
     return c;
@@ -230,7 +230,7 @@ library SafeMath {
    *
    * - The divisor cannot be zero.
    */
-  function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+  function mod(uint a, uint b) internal pure returns (uint) {
     return mod(a, b, 'SafeMath: modulo by zero');
   }
 
@@ -247,10 +247,10 @@ library SafeMath {
    * - The divisor cannot be zero.
    */
   function mod(
-    uint256 a,
-    uint256 b,
+    uint a,
+    uint b,
     string memory errorMessage
-  ) internal pure returns (uint256) {
+  ) internal pure returns (uint) {
     require(b != 0, errorMessage);
     return a % b;
   }
@@ -310,11 +310,11 @@ library Address {
    * {ReentrancyGuard} or the
    * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
    */
-  function sendValue(address payable recipient, uint256 amount) internal {
+  function sendValue(address payable recipient, uint amount) internal {
     require(address(this).balance >= amount, 'Address: insufficient balance');
 
     // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-    (bool success, ) = recipient.call{ value: amount }('');
+    (bool success, ) = recipient.call{value: amount}('');
     require(success, 'Address: unable to send value, recipient may have reverted');
   }
 
@@ -368,7 +368,7 @@ library Address {
   function functionCallWithValue(
     address target,
     bytes memory data,
-    uint256 value
+    uint value
   ) internal returns (bytes memory) {
     return functionCallWithValue(target, data, value, 'Address: low-level call with value failed');
   }
@@ -382,7 +382,7 @@ library Address {
   function functionCallWithValue(
     address target,
     bytes memory data,
-    uint256 value,
+    uint value,
     string memory errorMessage
   ) internal returns (bytes memory) {
     require(address(this).balance >= value, 'Address: insufficient balance for call');
@@ -392,13 +392,13 @@ library Address {
   function _functionCallWithValue(
     address target,
     bytes memory data,
-    uint256 weiValue,
+    uint weiValue,
     string memory errorMessage
   ) private returns (bytes memory) {
     require(isContract(target), 'Address: call to non-contract');
 
     // solhint-disable-next-line avoid-low-level-calls
-    (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
+    (bool success, bytes memory returndata) = target.call{value: weiValue}(data);
     if (success) {
       return returndata;
     } else {
@@ -432,13 +432,13 @@ pragma solidity ^0.6.0;
  * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
  */
 library SafeERC20 {
-  using SafeMath for uint256;
+  using SafeMath for uint;
   using Address for address;
 
   function safeTransfer(
     IERC20 token,
     address to,
-    uint256 value
+    uint value
   ) internal {
     _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
   }
@@ -447,9 +447,12 @@ library SafeERC20 {
     IERC20 token,
     address from,
     address to,
-    uint256 value
+    uint value
   ) internal {
-    _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+    _callOptionalReturn(
+      token,
+      abi.encodeWithSelector(token.transferFrom.selector, from, to, value)
+    );
   }
 
   /**
@@ -462,7 +465,7 @@ library SafeERC20 {
   function safeApprove(
     IERC20 token,
     address spender,
-    uint256 value
+    uint value
   ) internal {
     // safeApprove should only be called when setting an initial allowance,
     // or when resetting it to zero. To increase and decrease it, use
@@ -478,20 +481,29 @@ library SafeERC20 {
   function safeIncreaseAllowance(
     IERC20 token,
     address spender,
-    uint256 value
+    uint value
   ) internal {
-    uint256 newAllowance = token.allowance(address(this), spender).add(value);
-    _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    uint newAllowance = token.allowance(address(this), spender).add(value);
+    _callOptionalReturn(
+      token,
+      abi.encodeWithSelector(token.approve.selector, spender, newAllowance)
+    );
   }
 
   function safeDecreaseAllowance(
     IERC20 token,
     address spender,
-    uint256 value
+    uint value
   ) internal {
-    uint256 newAllowance =
-      token.allowance(address(this), spender).sub(value, 'SafeERC20: decreased allowance below zero');
-    _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    uint newAllowance =
+      token.allowance(address(this), spender).sub(
+        value,
+        'SafeERC20: decreased allowance below zero'
+      );
+    _callOptionalReturn(
+      token,
+      abi.encodeWithSelector(token.approve.selector, spender, newAllowance)
+    );
   }
 
   /**
@@ -557,7 +569,7 @@ library EnumerableSet {
     bytes32[] _values;
     // Position of the value in the `values` array, plus 1 because index 0
     // means a value is not in the set.
-    mapping(bytes32 => uint256) _indexes;
+    mapping(bytes32 => uint) _indexes;
   }
 
   /**
@@ -586,7 +598,7 @@ library EnumerableSet {
    */
   function _remove(Set storage set, bytes32 value) private returns (bool) {
     // We read and store the value's index to prevent multiple reads from the same storage slot
-    uint256 valueIndex = set._indexes[value];
+    uint valueIndex = set._indexes[value];
 
     if (valueIndex != 0) {
       // Equivalent to contains(set, value)
@@ -594,8 +606,8 @@ library EnumerableSet {
       // the array, and then remove the last element (sometimes called as 'swap and pop').
       // This modifies the order of the array, as noted in {at}.
 
-      uint256 toDeleteIndex = valueIndex - 1;
-      uint256 lastIndex = set._values.length - 1;
+      uint toDeleteIndex = valueIndex - 1;
+      uint lastIndex = set._values.length - 1;
 
       // When the value to delete is the last one, the swap operation is unnecessary. However, since this occurs
       // so rarely, we still do the swap anyway to avoid the gas cost of adding an 'if' statement.
@@ -629,7 +641,7 @@ library EnumerableSet {
   /**
    * @dev Returns the number of values on the set. O(1).
    */
-  function _length(Set storage set) private view returns (uint256) {
+  function _length(Set storage set) private view returns (uint) {
     return set._values.length;
   }
 
@@ -643,7 +655,7 @@ library EnumerableSet {
    *
    * - `index` must be strictly less than {length}.
    */
-  function _at(Set storage set, uint256 index) private view returns (bytes32) {
+  function _at(Set storage set, uint index) private view returns (bytes32) {
     require(set._values.length > index, 'EnumerableSet: index out of bounds');
     return set._values[index];
   }
@@ -661,7 +673,7 @@ library EnumerableSet {
    * already present.
    */
   function add(AddressSet storage set, address value) internal returns (bool) {
-    return _add(set._inner, bytes32(uint256(value)));
+    return _add(set._inner, bytes32(uint(value)));
   }
 
   /**
@@ -671,20 +683,20 @@ library EnumerableSet {
    * present.
    */
   function remove(AddressSet storage set, address value) internal returns (bool) {
-    return _remove(set._inner, bytes32(uint256(value)));
+    return _remove(set._inner, bytes32(uint(value)));
   }
 
   /**
    * @dev Returns true if the value is in the set. O(1).
    */
   function contains(AddressSet storage set, address value) internal view returns (bool) {
-    return _contains(set._inner, bytes32(uint256(value)));
+    return _contains(set._inner, bytes32(uint(value)));
   }
 
   /**
    * @dev Returns the number of values in the set. O(1).
    */
-  function length(AddressSet storage set) internal view returns (uint256) {
+  function length(AddressSet storage set) internal view returns (uint) {
     return _length(set._inner);
   }
 
@@ -698,8 +710,8 @@ library EnumerableSet {
    *
    * - `index` must be strictly less than {length}.
    */
-  function at(AddressSet storage set, uint256 index) internal view returns (address) {
-    return address(uint256(_at(set._inner, index)));
+  function at(AddressSet storage set, uint index) internal view returns (address) {
+    return address(uint(_at(set._inner, index)));
   }
 
   // UintSet
@@ -714,7 +726,7 @@ library EnumerableSet {
    * Returns true if the value was added to the set, that is if it was not
    * already present.
    */
-  function add(UintSet storage set, uint256 value) internal returns (bool) {
+  function add(UintSet storage set, uint value) internal returns (bool) {
     return _add(set._inner, bytes32(value));
   }
 
@@ -724,21 +736,21 @@ library EnumerableSet {
    * Returns true if the value was removed from the set, that is if it was
    * present.
    */
-  function remove(UintSet storage set, uint256 value) internal returns (bool) {
+  function remove(UintSet storage set, uint value) internal returns (bool) {
     return _remove(set._inner, bytes32(value));
   }
 
   /**
    * @dev Returns true if the value is in the set. O(1).
    */
-  function contains(UintSet storage set, uint256 value) internal view returns (bool) {
+  function contains(UintSet storage set, uint value) internal view returns (bool) {
     return _contains(set._inner, bytes32(value));
   }
 
   /**
    * @dev Returns the number of values on the set. O(1).
    */
-  function length(UintSet storage set) internal view returns (uint256) {
+  function length(UintSet storage set) internal view returns (uint) {
     return _length(set._inner);
   }
 
@@ -752,8 +764,8 @@ library EnumerableSet {
    *
    * - `index` must be strictly less than {length}.
    */
-  function at(UintSet storage set, uint256 index) internal view returns (uint256) {
-    return uint256(_at(set._inner, index));
+  function at(UintSet storage set, uint index) internal view returns (uint) {
+    return uint(_at(set._inner, index));
   }
 }
 
@@ -879,14 +891,14 @@ pragma solidity ^0.6.0;
  * allowances. See {IERC20-approve}.
  */
 contract ERC20 is Context, IERC20 {
-  using SafeMath for uint256;
+  using SafeMath for uint;
   using Address for address;
 
-  mapping(address => uint256) private _balances;
+  mapping(address => uint) private _balances;
 
-  mapping(address => mapping(address => uint256)) private _allowances;
+  mapping(address => mapping(address => uint)) private _allowances;
 
-  uint256 private _totalSupply;
+  uint private _totalSupply;
 
   string private _name;
   string private _symbol;
@@ -942,14 +954,14 @@ contract ERC20 is Context, IERC20 {
   /**
    * @dev See {IERC20-totalSupply}.
    */
-  function totalSupply() public view override returns (uint256) {
+  function totalSupply() public view override returns (uint) {
     return _totalSupply;
   }
 
   /**
    * @dev See {IERC20-balanceOf}.
    */
-  function balanceOf(address account) public view override returns (uint256) {
+  function balanceOf(address account) public view override returns (uint) {
     return _balances[account];
   }
 
@@ -961,7 +973,7 @@ contract ERC20 is Context, IERC20 {
    * - `recipient` cannot be the zero address.
    * - the caller must have a balance of at least `amount`.
    */
-  function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+  function transfer(address recipient, uint amount) public virtual override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
     return true;
   }
@@ -969,7 +981,7 @@ contract ERC20 is Context, IERC20 {
   /**
    * @dev See {IERC20-allowance}.
    */
-  function allowance(address owner, address spender) public view virtual override returns (uint256) {
+  function allowance(address owner, address spender) public view virtual override returns (uint) {
     return _allowances[owner][spender];
   }
 
@@ -980,7 +992,7 @@ contract ERC20 is Context, IERC20 {
    *
    * - `spender` cannot be the zero address.
    */
-  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+  function approve(address spender, uint amount) public virtual override returns (bool) {
     _approve(_msgSender(), spender, amount);
     return true;
   }
@@ -1000,7 +1012,7 @@ contract ERC20 is Context, IERC20 {
   function transferFrom(
     address sender,
     address recipient,
-    uint256 amount
+    uint amount
   ) public virtual override returns (bool) {
     _transfer(sender, recipient, amount);
     _approve(
@@ -1023,7 +1035,7 @@ contract ERC20 is Context, IERC20 {
    *
    * - `spender` cannot be the zero address.
    */
-  function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+  function increaseAllowance(address spender, uint addedValue) public virtual returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
     return true;
   }
@@ -1042,11 +1054,14 @@ contract ERC20 is Context, IERC20 {
    * - `spender` must have allowance for the caller of at least
    * `subtractedValue`.
    */
-  function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+  function decreaseAllowance(address spender, uint subtractedValue) public virtual returns (bool) {
     _approve(
       _msgSender(),
       spender,
-      _allowances[_msgSender()][spender].sub(subtractedValue, 'ERC20: decreased allowance below zero')
+      _allowances[_msgSender()][spender].sub(
+        subtractedValue,
+        'ERC20: decreased allowance below zero'
+      )
     );
     return true;
   }
@@ -1068,7 +1083,7 @@ contract ERC20 is Context, IERC20 {
   function _transfer(
     address sender,
     address recipient,
-    uint256 amount
+    uint amount
   ) internal virtual {
     require(sender != address(0), 'ERC20: transfer from the zero address');
     require(recipient != address(0), 'ERC20: transfer to the zero address');
@@ -1089,7 +1104,7 @@ contract ERC20 is Context, IERC20 {
    *
    * - `to` cannot be the zero address.
    */
-  function _mint(address account, uint256 amount) internal virtual {
+  function _mint(address account, uint amount) internal virtual {
     require(account != address(0), 'ERC20: mint to the zero address');
 
     _beforeTokenTransfer(address(0), account, amount);
@@ -1110,7 +1125,7 @@ contract ERC20 is Context, IERC20 {
    * - `account` cannot be the zero address.
    * - `account` must have at least `amount` tokens.
    */
-  function _burn(address account, uint256 amount) internal virtual {
+  function _burn(address account, uint amount) internal virtual {
     require(account != address(0), 'ERC20: burn from the zero address');
 
     _beforeTokenTransfer(account, address(0), amount);
@@ -1136,7 +1151,7 @@ contract ERC20 is Context, IERC20 {
   function _approve(
     address owner,
     address spender,
-    uint256 amount
+    uint amount
   ) internal virtual {
     require(owner != address(0), 'ERC20: approve from the zero address');
     require(spender != address(0), 'ERC20: approve to the zero address');
@@ -1173,7 +1188,7 @@ contract ERC20 is Context, IERC20 {
   function _beforeTokenTransfer(
     address from,
     address to,
-    uint256 amount
+    uint amount
   ) internal virtual {}
 }
 
@@ -1184,7 +1199,7 @@ pragma solidity 0.6.12;
 // SushiToken with Governance.
 contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
   /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
-  function mint(address _to, uint256 _amount) public onlyOwner {
+  function mint(address _to, uint _amount) public onlyOwner {
     _mint(_to, _amount);
     _moveDelegates(address(0), _delegates[_to], _amount);
   }
@@ -1201,7 +1216,7 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
   /// @notice A checkpoint for marking number of votes from a given block
   struct Checkpoint {
     uint32 fromBlock;
-    uint256 votes;
+    uint votes;
   }
 
   /// @notice A record of votes checkpoints for each account, by index
@@ -1215,16 +1230,21 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
     keccak256('EIP712Domain(string name,uint256 chainId,address verifyingContract)');
 
   /// @notice The EIP-712 typehash for the delegation struct used by the contract
-  bytes32 public constant DELEGATION_TYPEHASH = keccak256('Delegation(address delegatee,uint256 nonce,uint256 expiry)');
+  bytes32 public constant DELEGATION_TYPEHASH =
+    keccak256('Delegation(address delegatee,uint256 nonce,uint256 expiry)');
 
   /// @notice A record of states for signing / validating signatures
-  mapping(address => uint256) public nonces;
+  mapping(address => uint) public nonces;
 
   /// @notice An event thats emitted when an account changes its delegate
-  event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
+  event DelegateChanged(
+    address indexed delegator,
+    address indexed fromDelegate,
+    address indexed toDelegate
+  );
 
   /// @notice An event thats emitted when a delegate account's vote balance changes
-  event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
+  event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
 
   /**
    * @notice Delegate votes from `msg.sender` to `delegatee`
@@ -1253,8 +1273,8 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
    */
   function delegateBySig(
     address delegatee,
-    uint256 nonce,
-    uint256 expiry,
+    uint nonce,
+    uint expiry,
     uint8 v,
     bytes32 r,
     bytes32 s
@@ -1278,7 +1298,7 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
    * @param account The address to get votes balance
    * @return The number of current votes for `account`
    */
-  function getCurrentVotes(address account) external view returns (uint256) {
+  function getCurrentVotes(address account) external view returns (uint) {
     uint32 nCheckpoints = numCheckpoints[account];
     return nCheckpoints > 0 ? checkpoints[account][nCheckpoints - 1].votes : 0;
   }
@@ -1290,7 +1310,7 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
    * @param blockNumber The block number to get the vote balance at
    * @return The number of votes the account had as of the given block
    */
-  function getPriorVotes(address account, uint256 blockNumber) external view returns (uint256) {
+  function getPriorVotes(address account, uint blockNumber) external view returns (uint) {
     require(blockNumber < block.number, 'SUSHI::getPriorVotes: not yet determined');
 
     uint32 nCheckpoints = numCheckpoints[account];
@@ -1326,7 +1346,7 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
 
   function _delegate(address delegator, address delegatee) internal {
     address currentDelegate = _delegates[delegator];
-    uint256 delegatorBalance = balanceOf(delegator); // balance of underlying SUSHIs (not scaled);
+    uint delegatorBalance = balanceOf(delegator); // balance of underlying SUSHIs (not scaled);
     _delegates[delegator] = delegatee;
 
     emit DelegateChanged(delegator, currentDelegate, delegatee);
@@ -1337,22 +1357,22 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
   function _moveDelegates(
     address srcRep,
     address dstRep,
-    uint256 amount
+    uint amount
   ) internal {
     if (srcRep != dstRep && amount > 0) {
       if (srcRep != address(0)) {
         // decrease old representative
         uint32 srcRepNum = numCheckpoints[srcRep];
-        uint256 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-        uint256 srcRepNew = srcRepOld.sub(amount);
+        uint srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
+        uint srcRepNew = srcRepOld.sub(amount);
         _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
       }
 
       if (dstRep != address(0)) {
         // increase new representative
         uint32 dstRepNum = numCheckpoints[dstRep];
-        uint256 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-        uint256 dstRepNew = dstRepOld.add(amount);
+        uint dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
+        uint dstRepNew = dstRepOld.add(amount);
         _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
       }
     }
@@ -1361,10 +1381,11 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
   function _writeCheckpoint(
     address delegatee,
     uint32 nCheckpoints,
-    uint256 oldVotes,
-    uint256 newVotes
+    uint oldVotes,
+    uint newVotes
   ) internal {
-    uint32 blockNumber = safe32(block.number, 'SUSHI::_writeCheckpoint: block number exceeds 32 bits');
+    uint32 blockNumber =
+      safe32(block.number, 'SUSHI::_writeCheckpoint: block number exceeds 32 bits');
 
     if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
       checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
@@ -1376,13 +1397,13 @@ contract SushiToken is ERC20('SushiToken', 'SUSHI'), Ownable {
     emit DelegateVotesChanged(delegatee, oldVotes, newVotes);
   }
 
-  function safe32(uint256 n, string memory errorMessage) internal pure returns (uint32) {
+  function safe32(uint n, string memory errorMessage) internal pure returns (uint32) {
     require(n < 2**32, errorMessage);
     return uint32(n);
   }
 
-  function getChainId() internal pure returns (uint256) {
-    uint256 chainId;
+  function getChainId() internal pure returns (uint) {
+    uint chainId;
     assembly {
       chainId := chainid()
     }
@@ -1415,13 +1436,13 @@ interface IMigratorChef {
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
 contract MasterChef is Ownable {
-  using SafeMath for uint256;
+  using SafeMath for uint;
   using SafeERC20 for IERC20;
 
   // Info of each user.
   struct UserInfo {
-    uint256 amount; // How many LP tokens the user has provided.
-    uint256 rewardDebt; // Reward debt. See explanation below.
+    uint amount; // How many LP tokens the user has provided.
+    uint rewardDebt; // Reward debt. See explanation below.
     //
     // We do some fancy math here. Basically, any point in time, the amount of SUSHIs
     // entitled to a user but is pending to be distributed is:
@@ -1438,9 +1459,9 @@ contract MasterChef is Ownable {
   // Info of each pool.
   struct PoolInfo {
     IERC20 lpToken; // Address of LP token contract.
-    uint256 allocPoint; // How many allocation points assigned to this pool. SUSHIs to distribute per block.
-    uint256 lastRewardBlock; // Last block number that SUSHIs distribution occurs.
-    uint256 accSushiPerShare; // Accumulated SUSHIs per share, times 1e12. See below.
+    uint allocPoint; // How many allocation points assigned to this pool. SUSHIs to distribute per block.
+    uint lastRewardBlock; // Last block number that SUSHIs distribution occurs.
+    uint accSushiPerShare; // Accumulated SUSHIs per share, times 1e12. See below.
   }
 
   // The SUSHI TOKEN!
@@ -1448,33 +1469,33 @@ contract MasterChef is Ownable {
   // Dev address.
   address public devaddr;
   // Block number when bonus SUSHI period ends.
-  uint256 public bonusEndBlock;
+  uint public bonusEndBlock;
   // SUSHI tokens created per block.
-  uint256 public sushiPerBlock;
+  uint public sushiPerBlock;
   // Bonus muliplier for early sushi makers.
-  uint256 public constant BONUS_MULTIPLIER = 10;
+  uint public constant BONUS_MULTIPLIER = 10;
   // The migrator contract. It has a lot of power. Can only be set through governance (owner).
   IMigratorChef public migrator;
 
   // Info of each pool.
   PoolInfo[] public poolInfo;
   // Info of each user that stakes LP tokens.
-  mapping(uint256 => mapping(address => UserInfo)) public userInfo;
+  mapping(uint => mapping(address => UserInfo)) public userInfo;
   // Total allocation poitns. Must be the sum of all allocation points in all pools.
-  uint256 public totalAllocPoint = 0;
+  uint public totalAllocPoint = 0;
   // The block number when SUSHI mining starts.
-  uint256 public startBlock;
+  uint public startBlock;
 
-  event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-  event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-  event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+  event Deposit(address indexed user, uint indexed pid, uint amount);
+  event Withdraw(address indexed user, uint indexed pid, uint amount);
+  event EmergencyWithdraw(address indexed user, uint indexed pid, uint amount);
 
   constructor(
     SushiToken _sushi,
     address _devaddr,
-    uint256 _sushiPerBlock,
-    uint256 _startBlock,
-    uint256 _bonusEndBlock
+    uint _sushiPerBlock,
+    uint _startBlock,
+    uint _bonusEndBlock
   ) public {
     sushi = _sushi;
     devaddr = _devaddr;
@@ -1483,31 +1504,36 @@ contract MasterChef is Ownable {
     startBlock = _startBlock;
   }
 
-  function poolLength() external view returns (uint256) {
+  function poolLength() external view returns (uint) {
     return poolInfo.length;
   }
 
   // Add a new lp to the pool. Can only be called by the owner.
   // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
   function add(
-    uint256 _allocPoint,
+    uint _allocPoint,
     IERC20 _lpToken,
     bool _withUpdate
   ) public onlyOwner {
     if (_withUpdate) {
       massUpdatePools();
     }
-    uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
+    uint lastRewardBlock = block.number > startBlock ? block.number : startBlock;
     totalAllocPoint = totalAllocPoint.add(_allocPoint);
     poolInfo.push(
-      PoolInfo({ lpToken: _lpToken, allocPoint: _allocPoint, lastRewardBlock: lastRewardBlock, accSushiPerShare: 0 })
+      PoolInfo({
+        lpToken: _lpToken,
+        allocPoint: _allocPoint,
+        lastRewardBlock: lastRewardBlock,
+        accSushiPerShare: 0
+      })
     );
   }
 
   // Update the given pool's SUSHI allocation point. Can only be called by the owner.
   function set(
-    uint256 _pid,
-    uint256 _allocPoint,
+    uint _pid,
+    uint _allocPoint,
     bool _withUpdate
   ) public onlyOwner {
     if (_withUpdate) {
@@ -1523,11 +1549,11 @@ contract MasterChef is Ownable {
   }
 
   // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
-  function migrate(uint256 _pid) public {
+  function migrate(uint _pid) public {
     require(address(migrator) != address(0), 'migrate: no migrator');
     PoolInfo storage pool = poolInfo[_pid];
     IERC20 lpToken = pool.lpToken;
-    uint256 bal = lpToken.balanceOf(address(this));
+    uint bal = lpToken.balanceOf(address(this));
     lpToken.safeApprove(address(migrator), bal);
     IERC20 newLpToken = migrator.migrate(lpToken);
     require(bal == newLpToken.balanceOf(address(this)), 'migrate: bad');
@@ -1535,7 +1561,7 @@ contract MasterChef is Ownable {
   }
 
   // Return reward multiplier over the given _from to _to block.
-  function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
+  function getMultiplier(uint _from, uint _to) public view returns (uint) {
     if (_to <= bonusEndBlock) {
       return _to.sub(_from).mul(BONUS_MULTIPLIER);
     } else if (_from >= bonusEndBlock) {
@@ -1546,14 +1572,14 @@ contract MasterChef is Ownable {
   }
 
   // View function to see pending SUSHIs on frontend.
-  function pendingSushi(uint256 _pid, address _user) external view returns (uint256) {
+  function pendingSushi(uint _pid, address _user) external view returns (uint) {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_pid][_user];
-    uint256 accSushiPerShare = pool.accSushiPerShare;
-    uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+    uint accSushiPerShare = pool.accSushiPerShare;
+    uint lpSupply = pool.lpToken.balanceOf(address(this));
     if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-      uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-      uint256 sushiReward = multiplier.mul(sushiPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+      uint multiplier = getMultiplier(pool.lastRewardBlock, block.number);
+      uint sushiReward = multiplier.mul(sushiPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
       accSushiPerShare = accSushiPerShare.add(sushiReward.mul(1e12).div(lpSupply));
     }
     return user.amount.mul(accSushiPerShare).div(1e12).sub(user.rewardDebt);
@@ -1561,25 +1587,25 @@ contract MasterChef is Ownable {
 
   // Update reward vairables for all pools. Be careful of gas spending!
   function massUpdatePools() public {
-    uint256 length = poolInfo.length;
-    for (uint256 pid = 0; pid < length; ++pid) {
+    uint length = poolInfo.length;
+    for (uint pid = 0; pid < length; ++pid) {
       updatePool(pid);
     }
   }
 
   // Update reward variables of the given pool to be up-to-date.
-  function updatePool(uint256 _pid) public {
+  function updatePool(uint _pid) public {
     PoolInfo storage pool = poolInfo[_pid];
     if (block.number <= pool.lastRewardBlock) {
       return;
     }
-    uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+    uint lpSupply = pool.lpToken.balanceOf(address(this));
     if (lpSupply == 0) {
       pool.lastRewardBlock = block.number;
       return;
     }
-    uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-    uint256 sushiReward = multiplier.mul(sushiPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+    uint multiplier = getMultiplier(pool.lastRewardBlock, block.number);
+    uint sushiReward = multiplier.mul(sushiPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
     sushi.mint(devaddr, sushiReward.div(10));
     sushi.mint(address(this), sushiReward);
     pool.accSushiPerShare = pool.accSushiPerShare.add(sushiReward.mul(1e12).div(lpSupply));
@@ -1587,12 +1613,12 @@ contract MasterChef is Ownable {
   }
 
   // Deposit LP tokens to MasterChef for SUSHI allocation.
-  function deposit(uint256 _pid, uint256 _amount) public {
+  function deposit(uint _pid, uint _amount) public {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_pid][msg.sender];
     updatePool(_pid);
     if (user.amount > 0) {
-      uint256 pending = user.amount.mul(pool.accSushiPerShare).div(1e12).sub(user.rewardDebt);
+      uint pending = user.amount.mul(pool.accSushiPerShare).div(1e12).sub(user.rewardDebt);
       safeSushiTransfer(msg.sender, pending);
     }
     pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
@@ -1602,12 +1628,12 @@ contract MasterChef is Ownable {
   }
 
   // Withdraw LP tokens from MasterChef.
-  function withdraw(uint256 _pid, uint256 _amount) public {
+  function withdraw(uint _pid, uint _amount) public {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_pid][msg.sender];
     require(user.amount >= _amount, 'withdraw: not good');
     updatePool(_pid);
-    uint256 pending = user.amount.mul(pool.accSushiPerShare).div(1e12).sub(user.rewardDebt);
+    uint pending = user.amount.mul(pool.accSushiPerShare).div(1e12).sub(user.rewardDebt);
     safeSushiTransfer(msg.sender, pending);
     user.amount = user.amount.sub(_amount);
     user.rewardDebt = user.amount.mul(pool.accSushiPerShare).div(1e12);
@@ -1616,7 +1642,7 @@ contract MasterChef is Ownable {
   }
 
   // Withdraw without caring about rewards. EMERGENCY ONLY.
-  function emergencyWithdraw(uint256 _pid) public {
+  function emergencyWithdraw(uint _pid) public {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_pid][msg.sender];
     pool.lpToken.safeTransfer(address(msg.sender), user.amount);
@@ -1626,8 +1652,8 @@ contract MasterChef is Ownable {
   }
 
   // Safe sushi transfer function, just in case if rounding error causes pool to not have enough SUSHIs.
-  function safeSushiTransfer(address _to, uint256 _amount) internal {
-    uint256 sushiBal = sushi.balanceOf(address(this));
+  function safeSushiTransfer(address _to, uint _amount) internal {
+    uint sushiBal = sushi.balanceOf(address(this));
     if (_amount > sushiBal) {
       sushi.transfer(_to, sushiBal);
     } else {

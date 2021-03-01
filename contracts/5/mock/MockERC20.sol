@@ -12,7 +12,7 @@ contract MockERC20 is ERC20, Ownable {
     symbol = _symbol;
   }
 
-  function mint(address to, uint256 amount) public onlyOwner {
+  function mint(address to, uint amount) public onlyOwner {
     _mint(to, amount);
   }
 }

@@ -11,7 +11,7 @@ import './Strategy.sol';
 
 contract StrategyAllETHOnly is Ownable, ReentrancyGuard, Strategy {
   using SafeToken for address;
-  using SafeMath for uint256;
+  using SafeMath for uint;
 
   IUniswapV2Factory public factory;
   IUniswapV2Router02 public router;
@@ -29,17 +29,18 @@ contract StrategyAllETHOnly is Ownable, ReentrancyGuard, Strategy {
   /// @param data Extra calldata information passed along to this strategy.
   function execute(
     address, /* user */
-    uint256, /* debt */
+    uint, /* debt */
     bytes calldata data
   ) external payable nonReentrant {
     // 1. Find out what farming token we are dealing with and min additional LP tokens.
-    (address fToken, uint256 minLPAmount) = abi.decode(data, (address, uint256));
+    (address fToken, uint minLPAmount) = abi.decode(data, (address, uint));
     IUniswapV2Pair lpToken = IUniswapV2Pair(factory.getPair(fToken, weth));
     // 2. Compute the optimal amount of ETH to be converted to farming tokens.
-    uint256 balance = address(this).balance;
-    (uint256 r0, uint256 r1, ) = lpToken.getReserves();
-    uint256 rIn = lpToken.token0() == weth ? r0 : r1;
-    uint256 aIn = Math.sqrt(rIn.mul(balance.mul(3988000).add(rIn.mul(3988009)))).sub(rIn.mul(1997)) / 1994;
+    uint balance = address(this).balance;
+    (uint r0, uint r1, ) = lpToken.getReserves();
+    uint rIn = lpToken.token0() == weth ? r0 : r1;
+    uint aIn =
+      Math.sqrt(rIn.mul(balance.mul(3988000).add(rIn.mul(3988009)))).sub(rIn.mul(1997)) / 1994;
     // 3. Convert that portion of ETH to farming tokens.
     address[] memory path = new address[](2);
     path[0] = weth;
@@ -47,9 +48,16 @@ contract StrategyAllETHOnly is Ownable, ReentrancyGuard, Strategy {
     router.swapExactETHForTokens.value(aIn)(0, path, address(this), now);
     // 4. Mint more LP tokens and return all LP tokens to the sender.
     fToken.safeApprove(address(router), 0);
-    fToken.safeApprove(address(router), uint256(-1));
-    (, , uint256 moreLPAmount) =
-      router.addLiquidityETH.value(address(this).balance)(fToken, fToken.myBalance(), 0, 0, address(this), now);
+    fToken.safeApprove(address(router), uint(-1));
+    (, , uint moreLPAmount) =
+      router.addLiquidityETH.value(address(this).balance)(
+        fToken,
+        fToken.myBalance(),
+        0,
+        0,
+        address(this),
+        now
+      );
     require(moreLPAmount >= minLPAmount, 'insufficient LP tokens received');
     lpToken.transfer(msg.sender, lpToken.balanceOf(address(this)));
   }
@@ -61,7 +69,7 @@ contract StrategyAllETHOnly is Ownable, ReentrancyGuard, Strategy {
   function recover(
     address token,
     address to,
-    uint256 value
+    uint value
   ) external onlyOwner nonReentrant {
     token.safeTransfer(to, value);
   }

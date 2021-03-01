@@ -10,7 +10,7 @@ import './Strategy.sol';
 
 contract StrategyWithdrawMinimizeTrading is Ownable, ReentrancyGuard, Strategy {
   using SafeToken for address;
-  using SafeMath for uint256;
+  using SafeMath for uint;
 
   IUniswapV2Factory public factory;
   IUniswapV2Router02 public router;
@@ -30,32 +30,32 @@ contract StrategyWithdrawMinimizeTrading is Ownable, ReentrancyGuard, Strategy {
   /// @param data Extra calldata information passed along to this strategy.
   function execute(
     address user,
-    uint256 debt,
+    uint debt,
     bytes calldata data
   ) external payable nonReentrant {
     // 1. Find out what farming token we are dealing with.
-    (address fToken, uint256 minFToken) = abi.decode(data, (address, uint256));
+    (address fToken, uint minFToken) = abi.decode(data, (address, uint));
     IUniswapV2Pair lpToken = IUniswapV2Pair(factory.getPair(fToken, weth));
     // 2. Remove all liquidity back to ETH and farming tokens.
-    lpToken.approve(address(router), uint256(-1));
+    lpToken.approve(address(router), uint(-1));
     router.removeLiquidityETH(fToken, lpToken.balanceOf(address(this)), 0, 0, address(this), now);
     // 3. Convert farming tokens to ETH.
     address[] memory path = new address[](2);
     path[0] = fToken;
     path[1] = weth;
     fToken.safeApprove(address(router), 0);
-    fToken.safeApprove(address(router), uint256(-1));
-    uint256 balance = address(this).balance;
+    fToken.safeApprove(address(router), uint(-1));
+    uint balance = address(this).balance;
     if (debt > balance) {
       // Convert some farming tokens to ETH.
-      uint256 remainingDebt = debt.sub(balance);
+      uint remainingDebt = debt.sub(balance);
       router.swapTokensForExactETH(remainingDebt, fToken.myBalance(), path, address(this), now);
     }
     // 4. Return ETH back to the original caller.
-    uint256 remainingBalance = address(this).balance;
+    uint remainingBalance = address(this).balance;
     SafeToken.safeTransferETH(msg.sender, remainingBalance);
     // 5. Return remaining farming tokens to user.
-    uint256 remainingFToken = fToken.myBalance();
+    uint remainingFToken = fToken.myBalance();
     require(remainingFToken >= minFToken, 'insufficient farming tokens received');
     if (remainingFToken > 0) {
       fToken.safeTransfer(user, remainingFToken);
@@ -69,7 +69,7 @@ contract StrategyWithdrawMinimizeTrading is Ownable, ReentrancyGuard, Strategy {
   function recover(
     address token,
     address to,
-    uint256 value
+    uint value
   ) external onlyOwner nonReentrant {
     token.safeTransfer(to, value);
   }

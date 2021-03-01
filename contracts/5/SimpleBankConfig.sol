@@ -7,26 +7,26 @@ contract SimpleBankConfig is BankConfig, Ownable {
   struct GoblinConfig {
     bool isGoblin;
     bool acceptDebt;
-    uint256 workFactor;
-    uint256 killFactor;
+    uint workFactor;
+    uint killFactor;
   }
 
   /// The minimum ETH debt size per position.
-  uint256 public minDebtSize;
+  uint public minDebtSize;
   /// The interest rate per second, multiplied by 1e18.
-  uint256 public interestRate;
+  uint public interestRate;
   /// The portion of interests allocated to the reserve pool.
-  uint256 public getReservePoolBps;
+  uint public getReservePoolBps;
   /// The reward for successfully killing a position.
-  uint256 public getKillBps;
+  uint public getKillBps;
   /// Mapping for goblin address to its configuration.
   mapping(address => GoblinConfig) public goblins;
 
   constructor(
-    uint256 _minDebtSize,
-    uint256 _interestRate,
-    uint256 _reservePoolBps,
-    uint256 _killBps
+    uint _minDebtSize,
+    uint _interestRate,
+    uint _reservePoolBps,
+    uint _killBps
   ) public {
     setParams(_minDebtSize, _interestRate, _reservePoolBps, _killBps);
   }
@@ -37,10 +37,10 @@ contract SimpleBankConfig is BankConfig, Ownable {
   /// @param _reservePoolBps The new interests allocated to the reserve pool value.
   /// @param _killBps The new reward for killing a position value.
   function setParams(
-    uint256 _minDebtSize,
-    uint256 _interestRate,
-    uint256 _reservePoolBps,
-    uint256 _killBps
+    uint _minDebtSize,
+    uint _interestRate,
+    uint _reservePoolBps,
+    uint _killBps
   ) public onlyOwner {
     minDebtSize = _minDebtSize;
     interestRate = _interestRate;
@@ -58,8 +58,8 @@ contract SimpleBankConfig is BankConfig, Ownable {
     address goblin,
     bool _isGoblin,
     bool _acceptDebt,
-    uint256 _workFactor,
-    uint256 _killFactor
+    uint _workFactor,
+    uint _killFactor
   ) public onlyOwner {
     goblins[goblin] = GoblinConfig({
       isGoblin: _isGoblin,
@@ -71,9 +71,9 @@ contract SimpleBankConfig is BankConfig, Ownable {
 
   /// @dev Return the interest rate per second, using 1e18 as denom.
   function getInterestRate(
-    uint256, /* debt */
-    uint256 /* floating */
-  ) external view returns (uint256) {
+    uint, /* debt */
+    uint /* floating */
+  ) external view returns (uint) {
     return interestRate;
   }
 
@@ -91,8 +91,8 @@ contract SimpleBankConfig is BankConfig, Ownable {
   /// @dev Return the work factor for the goblin + ETH debt, using 1e4 as denom. Revert on non-goblin.
   function workFactor(
     address goblin,
-    uint256 /* debt */
-  ) external view returns (uint256) {
+    uint /* debt */
+  ) external view returns (uint) {
     require(goblins[goblin].isGoblin, '!goblin');
     return goblins[goblin].workFactor;
   }
@@ -100,8 +100,8 @@ contract SimpleBankConfig is BankConfig, Ownable {
   /// @dev Return the kill factor for the goblin + ETH debt, using 1e4 as denom. Revert on non-goblin.
   function killFactor(
     address goblin,
-    uint256 /* debt */
-  ) external view returns (uint256) {
+    uint /* debt */
+  ) external view returns (uint) {
     require(goblins[goblin].isGoblin, '!goblin');
     return goblins[goblin].killFactor;
   }

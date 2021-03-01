@@ -26,24 +26,24 @@ contract StrategyLiquidate is Ownable, ReentrancyGuard, Strategy {
   /// @param data Extra calldata information passed along to this strategy.
   function execute(
     address, /* user */
-    uint256, /* debt */
+    uint, /* debt */
     bytes calldata data
   ) external payable nonReentrant {
     // 1. Find out what farming token we are dealing with.
-    (address fToken, uint256 minETH) = abi.decode(data, (address, uint256));
+    (address fToken, uint minETH) = abi.decode(data, (address, uint));
     IUniswapV2Pair lpToken = IUniswapV2Pair(factory.getPair(fToken, weth));
     // 2. Remove all liquidity back to ETH and farming tokens.
-    lpToken.approve(address(router), uint256(-1));
+    lpToken.approve(address(router), uint(-1));
     router.removeLiquidityETH(fToken, lpToken.balanceOf(address(this)), 0, 0, address(this), now);
     // 3. Convert farming tokens to ETH.
     address[] memory path = new address[](2);
     path[0] = fToken;
     path[1] = weth;
     fToken.safeApprove(address(router), 0);
-    fToken.safeApprove(address(router), uint256(-1));
+    fToken.safeApprove(address(router), uint(-1));
     router.swapExactTokensForETH(fToken.myBalance(), 0, path, address(this), now);
     // 4. Return all ETH back to the original caller.
-    uint256 balance = address(this).balance;
+    uint balance = address(this).balance;
     require(balance >= minETH, 'insufficient ETH received');
     SafeToken.safeTransferETH(msg.sender, balance);
   }
@@ -55,7 +55,7 @@ contract StrategyLiquidate is Ownable, ReentrancyGuard, Strategy {
   function recover(
     address token,
     address to,
-    uint256 value
+    uint value
   ) external onlyOwner nonReentrant {
     token.safeTransfer(to, value);
   }

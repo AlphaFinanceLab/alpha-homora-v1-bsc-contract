@@ -12,12 +12,12 @@ interface IERC20 {
   /**
    * @dev Returns the amount of tokens in existence.
    */
-  function totalSupply() external view returns (uint256);
+  function totalSupply() external view returns (uint);
 
   /**
    * @dev Returns the amount of tokens owned by `account`.
    */
-  function balanceOf(address account) external view returns (uint256);
+  function balanceOf(address account) external view returns (uint);
 
   /**
    * @dev Moves `amount` tokens from the caller's account to `recipient`.
@@ -26,7 +26,7 @@ interface IERC20 {
    *
    * Emits a {Transfer} event.
    */
-  function transfer(address recipient, uint256 amount) external returns (bool);
+  function transfer(address recipient, uint amount) external returns (bool);
 
   /**
    * @dev Returns the remaining number of tokens that `spender` will be
@@ -35,7 +35,7 @@ interface IERC20 {
    *
    * This value changes when {approve} or {transferFrom} are called.
    */
-  function allowance(address owner, address spender) external view returns (uint256);
+  function allowance(address owner, address spender) external view returns (uint);
 
   /**
    * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -51,7 +51,7 @@ interface IERC20 {
    *
    * Emits an {Approval} event.
    */
-  function approve(address spender, uint256 amount) external returns (bool);
+  function approve(address spender, uint amount) external returns (bool);
 
   /**
    * @dev Moves `amount` tokens from `sender` to `recipient` using the
@@ -65,7 +65,7 @@ interface IERC20 {
   function transferFrom(
     address sender,
     address recipient,
-    uint256 amount
+    uint amount
   ) external returns (bool);
 
   /**
@@ -74,13 +74,13 @@ interface IERC20 {
    *
    * Note that `value` may be zero.
    */
-  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Transfer(address indexed from, address indexed to, uint value);
 
   /**
    * @dev Emitted when the allowance of a `spender` for an `owner` is set by
    * a call to {approve}. `value` is the new allowance.
    */
-  event Approval(address indexed owner, address indexed spender, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint value);
 }
 
 /**
@@ -106,8 +106,8 @@ library SafeMath {
    * Requirements:
    * - Addition cannot overflow.
    */
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a + b;
+  function add(uint a, uint b) internal pure returns (uint) {
+    uint c = a + b;
     require(c >= a, 'SafeMath: addition overflow');
 
     return c;
@@ -122,7 +122,7 @@ library SafeMath {
    * Requirements:
    * - Subtraction cannot overflow.
    */
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+  function sub(uint a, uint b) internal pure returns (uint) {
     return sub(a, b, 'SafeMath: subtraction overflow');
   }
 
@@ -138,12 +138,12 @@ library SafeMath {
    * _Available since v2.4.0._
    */
   function sub(
-    uint256 a,
-    uint256 b,
+    uint a,
+    uint b,
     string memory errorMessage
-  ) internal pure returns (uint256) {
+  ) internal pure returns (uint) {
     require(b <= a, errorMessage);
-    uint256 c = a - b;
+    uint c = a - b;
 
     return c;
   }
@@ -157,7 +157,7 @@ library SafeMath {
    * Requirements:
    * - Multiplication cannot overflow.
    */
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+  function mul(uint a, uint b) internal pure returns (uint) {
     // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
     // benefit is lost if 'b' is also tested.
     // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
@@ -165,7 +165,7 @@ library SafeMath {
       return 0;
     }
 
-    uint256 c = a * b;
+    uint c = a * b;
     require(c / a == b, 'SafeMath: multiplication overflow');
 
     return c;
@@ -182,7 +182,7 @@ library SafeMath {
    * Requirements:
    * - The divisor cannot be zero.
    */
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+  function div(uint a, uint b) internal pure returns (uint) {
     return div(a, b, 'SafeMath: division by zero');
   }
 
@@ -200,13 +200,13 @@ library SafeMath {
    * _Available since v2.4.0._
    */
   function div(
-    uint256 a,
-    uint256 b,
+    uint a,
+    uint b,
     string memory errorMessage
-  ) internal pure returns (uint256) {
+  ) internal pure returns (uint) {
     // Solidity only automatically asserts when dividing by 0
     require(b > 0, errorMessage);
-    uint256 c = a / b;
+    uint c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
 
     return c;
@@ -223,7 +223,7 @@ library SafeMath {
    * Requirements:
    * - The divisor cannot be zero.
    */
-  function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+  function mod(uint a, uint b) internal pure returns (uint) {
     return mod(a, b, 'SafeMath: modulo by zero');
   }
 
@@ -241,10 +241,10 @@ library SafeMath {
    * _Available since v2.4.0._
    */
   function mod(
-    uint256 a,
-    uint256 b,
+    uint a,
+    uint b,
     string memory errorMessage
-  ) internal pure returns (uint256) {
+  ) internal pure returns (uint) {
     require(b != 0, errorMessage);
     return a % b;
   }
@@ -312,7 +312,7 @@ library Address {
    *
    * _Available since v2.4.0._
    */
-  function sendValue(address payable recipient, uint256 amount) internal {
+  function sendValue(address payable recipient, uint amount) internal {
     require(address(this).balance >= amount, 'Address: insufficient balance');
 
     // solhint-disable-next-line avoid-call-value
@@ -322,13 +322,13 @@ library Address {
 }
 
 library SafeERC20 {
-  using SafeMath for uint256;
+  using SafeMath for uint;
   using Address for address;
 
   function safeTransfer(
     IERC20 token,
     address to,
-    uint256 value
+    uint value
   ) internal {
     callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
   }
@@ -337,7 +337,7 @@ library SafeERC20 {
     IERC20 token,
     address from,
     address to,
-    uint256 value
+    uint value
   ) internal {
     callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
   }
@@ -345,7 +345,7 @@ library SafeERC20 {
   function safeApprove(
     IERC20 token,
     address spender,
-    uint256 value
+    uint value
   ) internal {
     // safeApprove should only be called when setting an initial allowance,
     // or when resetting it to zero. To increase and decrease it, use
@@ -361,20 +361,29 @@ library SafeERC20 {
   function safeIncreaseAllowance(
     IERC20 token,
     address spender,
-    uint256 value
+    uint value
   ) internal {
-    uint256 newAllowance = token.allowance(address(this), spender).add(value);
-    callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    uint newAllowance = token.allowance(address(this), spender).add(value);
+    callOptionalReturn(
+      token,
+      abi.encodeWithSelector(token.approve.selector, spender, newAllowance)
+    );
   }
 
   function safeDecreaseAllowance(
     IERC20 token,
     address spender,
-    uint256 value
+    uint value
   ) internal {
-    uint256 newAllowance =
-      token.allowance(address(this), spender).sub(value, 'SafeERC20: decreased allowance below zero');
-    callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    uint newAllowance =
+      token.allowance(address(this), spender).sub(
+        value,
+        'SafeERC20: decreased allowance below zero'
+      );
+    callOptionalReturn(
+      token,
+      abi.encodeWithSelector(token.approve.selector, spender, newAllowance)
+    );
   }
 
   /**
@@ -442,13 +451,13 @@ contract ReentrancyGuard {
 }
 
 contract StakingTokenWrapper is ReentrancyGuard {
-  using SafeMath for uint256;
+  using SafeMath for uint;
   using SafeERC20 for IERC20;
 
   IERC20 public stakingToken;
 
-  uint256 private _totalSupply;
-  mapping(address => uint256) private _balances;
+  uint private _totalSupply;
+  mapping(address => uint) private _balances;
 
   /**
    * @dev TokenWrapper constructor
@@ -462,7 +471,7 @@ contract StakingTokenWrapper is ReentrancyGuard {
    * @dev Get the total amount of the staked token
    * @return uint256 total supply
    */
-  function totalSupply() public view returns (uint256) {
+  function totalSupply() public view returns (uint) {
     return _totalSupply;
   }
 
@@ -470,7 +479,7 @@ contract StakingTokenWrapper is ReentrancyGuard {
    * @dev Get the balance of a given account
    * @param _account User for which to retrieve balance
    */
-  function balanceOf(address _account) public view returns (uint256) {
+  function balanceOf(address _account) public view returns (uint) {
     return _balances[_account];
   }
 
@@ -478,7 +487,7 @@ contract StakingTokenWrapper is ReentrancyGuard {
    * @dev Deposits a given amount of StakingToken from sender
    * @param _amount Units of StakingToken
    */
-  function _stake(address _beneficiary, uint256 _amount) internal nonReentrant {
+  function _stake(address _beneficiary, uint _amount) internal nonReentrant {
     _totalSupply = _totalSupply.add(_amount);
     _balances[_beneficiary] = _balances[_beneficiary].add(_amount);
     stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
@@ -488,7 +497,7 @@ contract StakingTokenWrapper is ReentrancyGuard {
    * @dev Withdraws a given stake from sender
    * @param _amount Units of StakingToken
    */
-  function _withdraw(uint256 _amount) internal nonReentrant {
+  function _withdraw(uint _amount) internal nonReentrant {
     _totalSupply = _totalSupply.sub(_amount);
     _balances[msg.sender] = _balances[msg.sender].sub(_amount);
     stakingToken.safeTransfer(msg.sender, _amount);
@@ -500,24 +509,32 @@ contract ModuleKeys {
   // ===========
   // Phases
   // keccak256("Governance");                 // 2.x
-  bytes32 internal constant KEY_GOVERNANCE = 0x9409903de1e6fd852dfc61c9dacb48196c48535b60e25abf92acc92dd689078d;
+  bytes32 internal constant KEY_GOVERNANCE =
+    0x9409903de1e6fd852dfc61c9dacb48196c48535b60e25abf92acc92dd689078d;
   //keccak256("Staking");                     // 1.2
-  bytes32 internal constant KEY_STAKING = 0x1df41cd916959d1163dc8f0671a666ea8a3e434c13e40faef527133b5d167034;
+  bytes32 internal constant KEY_STAKING =
+    0x1df41cd916959d1163dc8f0671a666ea8a3e434c13e40faef527133b5d167034;
   //keccak256("ProxyAdmin");                  // 1.0
-  bytes32 internal constant KEY_PROXY_ADMIN = 0x96ed0203eb7e975a4cbcaa23951943fa35c5d8288117d50c12b3d48b0fab48d1;
+  bytes32 internal constant KEY_PROXY_ADMIN =
+    0x96ed0203eb7e975a4cbcaa23951943fa35c5d8288117d50c12b3d48b0fab48d1;
 
   // mStable
   // =======
   // keccak256("OracleHub");                  // 1.2
-  bytes32 internal constant KEY_ORACLE_HUB = 0x8ae3a082c61a7379e2280f3356a5131507d9829d222d853bfa7c9fe1200dd040;
+  bytes32 internal constant KEY_ORACLE_HUB =
+    0x8ae3a082c61a7379e2280f3356a5131507d9829d222d853bfa7c9fe1200dd040;
   // keccak256("Manager");                    // 1.2
-  bytes32 internal constant KEY_MANAGER = 0x6d439300980e333f0256d64be2c9f67e86f4493ce25f82498d6db7f4be3d9e6f;
+  bytes32 internal constant KEY_MANAGER =
+    0x6d439300980e333f0256d64be2c9f67e86f4493ce25f82498d6db7f4be3d9e6f;
   //keccak256("Recollateraliser");            // 2.x
-  bytes32 internal constant KEY_RECOLLATERALISER = 0x39e3ed1fc335ce346a8cbe3e64dd525cf22b37f1e2104a755e761c3c1eb4734f;
+  bytes32 internal constant KEY_RECOLLATERALISER =
+    0x39e3ed1fc335ce346a8cbe3e64dd525cf22b37f1e2104a755e761c3c1eb4734f;
   //keccak256("MetaToken");                   // 1.1
-  bytes32 internal constant KEY_META_TOKEN = 0xea7469b14936af748ee93c53b2fe510b9928edbdccac3963321efca7eb1a57a2;
+  bytes32 internal constant KEY_META_TOKEN =
+    0xea7469b14936af748ee93c53b2fe510b9928edbdccac3963321efca7eb1a57a2;
   // keccak256("SavingsManager");             // 1.0
-  bytes32 internal constant KEY_SAVINGS_MANAGER = 0x12fe936c77a1e196473c4314f3bed8eeac1d757b319abb85bdda70df35511bf1;
+  bytes32 internal constant KEY_SAVINGS_MANAGER =
+    0x12fe936c77a1e196473c4314f3bed8eeac1d757b319abb85bdda70df35511bf1;
 }
 
 interface INexus {
@@ -565,7 +582,10 @@ contract Module is ModuleKeys {
    *      Governance is either Governor address or Governance address.
    */
   modifier onlyGovernance() {
-    require(msg.sender == _governor() || msg.sender == _governance(), 'Only governance can execute');
+    require(
+      msg.sender == _governor() || msg.sender == _governance(),
+      'Only governance can execute'
+    );
     _;
   }
 
@@ -659,14 +679,14 @@ contract Module is ModuleKeys {
 }
 
 interface IRewardsDistributionRecipient {
-  function notifyRewardAmount(uint256 reward) external;
+  function notifyRewardAmount(uint reward) external;
 
   function getRewardToken() external view returns (IERC20);
 }
 
 contract RewardsDistributionRecipient is IRewardsDistributionRecipient, Module {
   // @abstract
-  function notifyRewardAmount(uint256 reward) external;
+  function notifyRewardAmount(uint reward) external;
 
   function getRewardToken() external view returns (IERC20);
 
@@ -696,13 +716,13 @@ contract RewardsDistributionRecipient is IRewardsDistributionRecipient, Module {
 }
 
 library StableMath {
-  using SafeMath for uint256;
+  using SafeMath for uint;
 
   /**
    * @dev Scaling unit for use in specific calculations,
    * where 1 * 10**18, or 1e18 represents a unit '1'
    */
-  uint256 private constant FULL_SCALE = 1e18;
+  uint private constant FULL_SCALE = 1e18;
 
   /**
    * @notice Token Ratios are used when converting between units of bAsset, mAsset and MTA
@@ -710,13 +730,13 @@ library StableMath {
    * @dev bAsset ratio unit for use in exact calculations,
    * where (1 bAsset unit * bAsset.ratio) / ratioScale == x mAsset unit
    */
-  uint256 private constant RATIO_SCALE = 1e8;
+  uint private constant RATIO_SCALE = 1e8;
 
   /**
    * @dev Provides an interface to the scaling unit
    * @return Scaling unit (1e18 or 1 * 10**18)
    */
-  function getFullScale() internal pure returns (uint256) {
+  function getFullScale() internal pure returns (uint) {
     return FULL_SCALE;
   }
 
@@ -724,7 +744,7 @@ library StableMath {
    * @dev Provides an interface to the ratio unit
    * @return Ratio scale unit (1e8 or 1 * 10**8)
    */
-  function getRatioScale() internal pure returns (uint256) {
+  function getRatioScale() internal pure returns (uint) {
     return RATIO_SCALE;
   }
 
@@ -733,7 +753,7 @@ library StableMath {
    * @param x   Simple uint256 to scale
    * @return    Scaled value a to an exact number
    */
-  function scaleInteger(uint256 x) internal pure returns (uint256) {
+  function scaleInteger(uint x) internal pure returns (uint) {
     return x.mul(FULL_SCALE);
   }
 
@@ -748,7 +768,7 @@ library StableMath {
    * @return      Result after multiplying the two inputs and then dividing by the shared
    *              scale unit
    */
-  function mulTruncate(uint256 x, uint256 y) internal pure returns (uint256) {
+  function mulTruncate(uint x, uint y) internal pure returns (uint) {
     return mulTruncateScale(x, y, FULL_SCALE);
   }
 
@@ -762,13 +782,13 @@ library StableMath {
    *              scale unit
    */
   function mulTruncateScale(
-    uint256 x,
-    uint256 y,
-    uint256 scale
-  ) internal pure returns (uint256) {
+    uint x,
+    uint y,
+    uint scale
+  ) internal pure returns (uint) {
     // e.g. assume scale = fullScale
     // z = 10e18 * 9e17 = 9e36
-    uint256 z = x.mul(y);
+    uint z = x.mul(y);
     // return 9e38 / 1e18 = 9e18
     return z.div(scale);
   }
@@ -780,11 +800,11 @@ library StableMath {
    * @return      Result after multiplying the two inputs and then dividing by the shared
    *              scale unit, rounded up to the closest base unit.
    */
-  function mulTruncateCeil(uint256 x, uint256 y) internal pure returns (uint256) {
+  function mulTruncateCeil(uint x, uint y) internal pure returns (uint) {
     // e.g. 8e17 * 17268172638 = 138145381104e17
-    uint256 scaled = x.mul(y);
+    uint scaled = x.mul(y);
     // e.g. 138145381104e17 + 9.99...e17 = 138145381113.99...e17
-    uint256 ceil = scaled.add(FULL_SCALE.sub(1));
+    uint ceil = scaled.add(FULL_SCALE.sub(1));
     // e.g. 13814538111.399...e18 / 1e18 = 13814538111
     return ceil.div(FULL_SCALE);
   }
@@ -797,9 +817,9 @@ library StableMath {
    * @return      Result after multiplying the left operand by the scale, and
    *              executing the division on the right hand input.
    */
-  function divPrecisely(uint256 x, uint256 y) internal pure returns (uint256) {
+  function divPrecisely(uint x, uint y) internal pure returns (uint) {
     // e.g. 8e18 * 1e18 = 8e36
-    uint256 z = x.mul(FULL_SCALE);
+    uint z = x.mul(FULL_SCALE);
     // e.g. 8e36 / 10e18 = 8e17
     return z.div(y);
   }
@@ -815,7 +835,7 @@ library StableMath {
    * @param ratio bAsset ratio
    * @return      Result after multiplying the two inputs and then dividing by the ratio scale
    */
-  function mulRatioTruncate(uint256 x, uint256 ratio) internal pure returns (uint256 c) {
+  function mulRatioTruncate(uint x, uint ratio) internal pure returns (uint c) {
     return mulTruncateScale(x, ratio, RATIO_SCALE);
   }
 
@@ -827,12 +847,12 @@ library StableMath {
    * @return      Result after multiplying the two inputs and then dividing by the shared
    *              ratio scale, rounded up to the closest base unit.
    */
-  function mulRatioTruncateCeil(uint256 x, uint256 ratio) internal pure returns (uint256) {
+  function mulRatioTruncateCeil(uint x, uint ratio) internal pure returns (uint) {
     // e.g. How much mAsset should I burn for this bAsset (x)?
     // 1e18 * 1e8 = 1e26
-    uint256 scaled = x.mul(ratio);
+    uint scaled = x.mul(ratio);
     // 1e26 + 9.99e7 = 100..00.999e8
-    uint256 ceil = scaled.add(RATIO_SCALE.sub(1));
+    uint ceil = scaled.add(RATIO_SCALE.sub(1));
     // return 100..00.999e8 / 1e8 = 1e18
     return ceil.div(RATIO_SCALE);
   }
@@ -845,9 +865,9 @@ library StableMath {
    * @return      Result after multiplying the left operand by the scale, and
    *              executing the division on the right hand input.
    */
-  function divRatioPrecisely(uint256 x, uint256 ratio) internal pure returns (uint256 c) {
+  function divRatioPrecisely(uint x, uint ratio) internal pure returns (uint c) {
     // e.g. 1e14 * 1e8 = 1e22
-    uint256 y = x.mul(RATIO_SCALE);
+    uint y = x.mul(RATIO_SCALE);
     // return 1e22 / 1e12 = 1e10
     return y.div(ratio);
   }
@@ -862,7 +882,7 @@ library StableMath {
    * @param y     Right hand input
    * @return      Minimum of the two inputs
    */
-  function min(uint256 x, uint256 y) internal pure returns (uint256) {
+  function min(uint x, uint y) internal pure returns (uint) {
     return x > y ? y : x;
   }
 
@@ -872,7 +892,7 @@ library StableMath {
    * @param y     Right hand input
    * @return      Maximum of the two inputs
    */
-  function max(uint256 x, uint256 y) internal pure returns (uint256) {
+  function max(uint x, uint y) internal pure returns (uint) {
     return x > y ? x : y;
   }
 
@@ -882,7 +902,7 @@ library StableMath {
    * @param upperBound  Maximum possible value to return
    * @return            Input x clamped to a maximum value, upperBound
    */
-  function clamp(uint256 x, uint256 upperBound) internal pure returns (uint256) {
+  function clamp(uint x, uint upperBound) internal pure returns (uint) {
     return x > upperBound ? upperBound : x;
   }
 }
@@ -902,27 +922,27 @@ library StableMath {
  *           - Introduced a `stake(_beneficiary)` function to enable contract wrappers to stake on behalf
  */
 contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipient {
-  using StableMath for uint256;
+  using StableMath for uint;
 
   IERC20 public rewardsToken;
 
-  uint256 public constant DURATION = 7 days;
+  uint public constant DURATION = 7 days;
 
   // Timestamp for current period finish
-  uint256 public periodFinish = 0;
+  uint public periodFinish = 0;
   // RewardRate for the rest of the PERIOD
-  uint256 public rewardRate = 0;
+  uint public rewardRate = 0;
   // Last time any user took action
-  uint256 public lastUpdateTime = 0;
+  uint public lastUpdateTime = 0;
   // Ever increasing rewardPerToken rate, based on % of total supply
-  uint256 public rewardPerTokenStored = 0;
-  mapping(address => uint256) public userRewardPerTokenPaid;
-  mapping(address => uint256) public rewards;
+  uint public rewardPerTokenStored = 0;
+  mapping(address => uint) public userRewardPerTokenPaid;
+  mapping(address => uint) public rewards;
 
-  event RewardAdded(uint256 reward);
-  event Staked(address indexed user, uint256 amount, address payer);
-  event Withdrawn(address indexed user, uint256 amount);
-  event RewardPaid(address indexed user, uint256 reward);
+  event RewardAdded(uint reward);
+  event Staked(address indexed user, uint amount, address payer);
+  event Withdrawn(address indexed user, uint amount);
+  event RewardPaid(address indexed user, uint reward);
 
   /** @dev StakingRewards is a TokenWrapper and RewardRecipient */
   constructor(
@@ -930,14 +950,18 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
     address _stakingToken,
     address _rewardsToken,
     address _rewardsDistributor
-  ) public StakingTokenWrapper(_stakingToken) RewardsDistributionRecipient(_nexus, _rewardsDistributor) {
+  )
+    public
+    StakingTokenWrapper(_stakingToken)
+    RewardsDistributionRecipient(_nexus, _rewardsDistributor)
+  {
     rewardsToken = IERC20(_rewardsToken);
   }
 
   /** @dev Updates the reward for a given address, before executing function */
   modifier updateReward(address _account) {
     // Setting of global vars
-    uint256 newRewardPerToken = rewardPerToken();
+    uint newRewardPerToken = rewardPerToken();
     // If statement protects against loss in initialisation case
     if (newRewardPerToken > 0) {
       rewardPerTokenStored = newRewardPerToken;
@@ -959,7 +983,7 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * @dev Stakes a given amount of the StakingToken for the sender
    * @param _amount Units of StakingToken
    */
-  function stake(uint256 _amount) external {
+  function stake(uint _amount) external {
     _stake(msg.sender, _amount);
   }
 
@@ -980,7 +1004,7 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * @param _beneficiary Staked tokens are credited to this address
    * @param _amount      Units of StakingToken
    */
-  function _stake(address _beneficiary, uint256 _amount) internal updateReward(_beneficiary) {
+  function _stake(address _beneficiary, uint _amount) internal updateReward(_beneficiary) {
     require(_amount > 0, 'Cannot stake 0');
     super._stake(_beneficiary, _amount);
     emit Staked(_beneficiary, _amount, msg.sender);
@@ -998,7 +1022,7 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * @dev Withdraws given stake amount from the pool
    * @param _amount Units of the staked token to withdraw
    */
-  function withdraw(uint256 _amount) public updateReward(msg.sender) {
+  function withdraw(uint _amount) public updateReward(msg.sender) {
     require(_amount > 0, 'Cannot withdraw 0');
     _withdraw(_amount);
     emit Withdrawn(msg.sender, _amount);
@@ -1009,7 +1033,7 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * First updates outstanding reward allocation and then transfers.
    */
   function claimReward() public updateReward(msg.sender) {
-    uint256 reward = rewards[msg.sender];
+    uint reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
       rewardsToken.transfer(msg.sender, reward);
@@ -1031,7 +1055,7 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
   /**
    * @dev Gets the last applicable timestamp for this reward period
    */
-  function lastTimeRewardApplicable() public view returns (uint256) {
+  function lastTimeRewardApplicable() public view returns (uint) {
     return StableMath.min(block.timestamp, periodFinish);
   }
 
@@ -1040,16 +1064,16 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * and sums with stored to give the new cumulative reward per token
    * @return 'Reward' per staked token
    */
-  function rewardPerToken() public view returns (uint256) {
+  function rewardPerToken() public view returns (uint) {
     // If there is no StakingToken liquidity, avoid div(0)
-    uint256 stakedTokens = totalSupply();
+    uint stakedTokens = totalSupply();
     if (stakedTokens == 0) {
       return rewardPerTokenStored;
     }
     // new reward units to distribute = rewardRate * timeSinceLastUpdate
-    uint256 rewardUnitsToDistribute = rewardRate.mul(lastTimeRewardApplicable().sub(lastUpdateTime));
+    uint rewardUnitsToDistribute = rewardRate.mul(lastTimeRewardApplicable().sub(lastUpdateTime));
     // new reward units per token = (rewardUnitsToDistribute * 1e18) / totalTokens
-    uint256 unitsToDistributePerToken = rewardUnitsToDistribute.divPrecisely(stakedTokens);
+    uint unitsToDistributePerToken = rewardUnitsToDistribute.divPrecisely(stakedTokens);
     // return summed rate
     return rewardPerTokenStored.add(unitsToDistributePerToken);
   }
@@ -1059,11 +1083,11 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * @param _account User address
    * @return Total reward amount earned
    */
-  function earned(address _account) public view returns (uint256) {
+  function earned(address _account) public view returns (uint) {
     // current rate per token - rate user previously received
-    uint256 userRewardDelta = rewardPerToken().sub(userRewardPerTokenPaid[_account]);
+    uint userRewardDelta = rewardPerToken().sub(userRewardPerTokenPaid[_account]);
     // new reward = staked tokens * difference in rate
-    uint256 userNewReward = balanceOf(_account).mulTruncate(userRewardDelta);
+    uint userNewReward = balanceOf(_account).mulTruncate(userRewardDelta);
     // add to previous rewards
     return rewards[_account].add(userNewReward);
   }
@@ -1077,16 +1101,20 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
    * Calculates an updated rewardRate based on the rewards in period.
    * @param _reward Units of RewardToken that have been added to the pool
    */
-  function notifyRewardAmount(uint256 _reward) external onlyRewardsDistributor updateReward(address(0)) {
-    uint256 currentTime = block.timestamp;
+  function notifyRewardAmount(uint _reward)
+    external
+    onlyRewardsDistributor
+    updateReward(address(0))
+  {
+    uint currentTime = block.timestamp;
     // If previous period over, reset rewardRate
     if (currentTime >= periodFinish) {
       rewardRate = _reward.div(DURATION);
     }
     // If additional reward to existing period, calc sum
     else {
-      uint256 remaining = periodFinish.sub(currentTime);
-      uint256 leftover = remaining.mul(rewardRate);
+      uint remaining = periodFinish.sub(currentTime);
+      uint leftover = remaining.mul(rewardRate);
       rewardRate = _reward.add(leftover).div(DURATION);
     }
 

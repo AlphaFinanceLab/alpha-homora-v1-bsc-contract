@@ -5,8 +5,8 @@ interface GoblinConfig {
   function acceptDebt(address goblin) external view returns (bool);
 
   /// @dev Return the work factor for the goblin + ETH debt, using 1e4 as denom.
-  function workFactor(address goblin, uint256 debt) external view returns (uint256);
+  function workFactor(address goblin, uint debt) external view returns (uint);
 
   /// @dev Return the kill factor for the goblin + ETH debt, using 1e4 as denom.
-  function killFactor(address goblin, uint256 debt) external view returns (uint256);
+  function killFactor(address goblin, uint debt) external view returns (uint);
 }

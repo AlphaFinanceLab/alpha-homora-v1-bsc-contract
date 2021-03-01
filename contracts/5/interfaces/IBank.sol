@@ -4,12 +4,12 @@ interface IBank {
   /**
    * @dev Returns the amount of tokens in existence.
    */
-  function totalSupply() external view returns (uint256);
+  function totalSupply() external view returns (uint);
 
   /**
    * @dev Returns the amount of tokens owned by `account`.
    */
-  function balanceOf(address account) external view returns (uint256);
+  function balanceOf(address account) external view returns (uint);
 
   /**
    * @dev Moves `amount` tokens from the caller's account to `recipient`.
@@ -18,7 +18,7 @@ interface IBank {
    *
    * Emits a `Transfer` event.
    */
-  function transfer(address recipient, uint256 amount) external returns (bool);
+  function transfer(address recipient, uint amount) external returns (bool);
 
   /**
    * @dev Returns the remaining number of tokens that `spender` will be
@@ -27,7 +27,7 @@ interface IBank {
    *
    * This value changes when `approve` or `transferFrom` are called.
    */
-  function allowance(address owner, address spender) external view returns (uint256);
+  function allowance(address owner, address spender) external view returns (uint);
 
   /**
    * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -43,7 +43,7 @@ interface IBank {
    *
    * Emits an `Approval` event.
    */
-  function approve(address spender, uint256 amount) external returns (bool);
+  function approve(address spender, uint amount) external returns (bool);
 
   /**
    * @dev Moves `amount` tokens from `sender` to `recipient` using the
@@ -57,15 +57,15 @@ interface IBank {
   function transferFrom(
     address sender,
     address recipient,
-    uint256 amount
+    uint amount
   ) external returns (bool);
 
   /// @dev Return the total ETH entitled to the token holders. Be careful of unaccrued interests.
-  function totalETH() external view returns (uint256);
+  function totalETH() external view returns (uint);
 
   /// @dev Add more ETH to the bank. Hope to get some good returns.
   function deposit() external payable;
 
   /// @dev Withdraw ETH from the bank by burning the share tokens.
-  function withdraw(uint256 share) external;
+  function withdraw(uint share) external;
 }

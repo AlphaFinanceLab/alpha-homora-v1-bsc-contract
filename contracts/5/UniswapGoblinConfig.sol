@@ -13,7 +13,7 @@ interface IUniswapGoblin {
 
 contract UniswapGoblinConfig is Ownable, GoblinConfig {
   using SafeToken for address;
-  using SafeMath for uint256;
+  using SafeMath for uint;
 
   struct Config {
     bool acceptDebt;
@@ -36,9 +36,9 @@ contract UniswapGoblinConfig is Ownable, GoblinConfig {
 
   /// @dev Set goblin configurations. Must be called by owner.
   function setConfigs(address[] calldata addrs, Config[] calldata configs) external onlyOwner {
-    uint256 len = addrs.length;
+    uint len = addrs.length;
     require(configs.length == len, 'bad len');
-    for (uint256 idx = 0; idx < len; idx++) {
+    for (uint idx = 0; idx < len; idx++) {
       goblins[addrs[idx]] = Config({
         acceptDebt: configs[idx].acceptDebt,
         workFactor: configs[idx].workFactor,
@@ -54,16 +54,16 @@ contract UniswapGoblinConfig is Ownable, GoblinConfig {
     address token0 = lp.token0();
     address token1 = lp.token1();
     // 1. Check that reserves and balances are consistent (within 1%)
-    (uint256 r0, uint256 r1, ) = lp.getReserves();
-    uint256 t0bal = token0.balanceOf(address(lp));
-    uint256 t1bal = token1.balanceOf(address(lp));
+    (uint r0, uint r1, ) = lp.getReserves();
+    uint t0bal = token0.balanceOf(address(lp));
+    uint t1bal = token1.balanceOf(address(lp));
     require(t0bal.mul(100) <= r0.mul(101), 'bad t0 balance');
     require(t1bal.mul(100) <= r1.mul(101), 'bad t1 balance');
     // 2. Check that price is in the acceptable range
-    (uint256 price, uint256 lastUpdate) = oracle.getPrice(token0, token1);
+    (uint price, uint lastUpdate) = oracle.getPrice(token0, token1);
     require(lastUpdate >= now - 7 days, 'price too stale');
-    uint256 lpPrice = r1.mul(1e18).div(r0);
-    uint256 maxPriceDiff = goblins[goblin].maxPriceDiff;
+    uint lpPrice = r1.mul(1e18).div(r0);
+    uint maxPriceDiff = goblins[goblin].maxPriceDiff;
     require(lpPrice <= price.mul(maxPriceDiff).div(10000), 'price too high');
     require(lpPrice >= price.mul(10000).div(maxPriceDiff), 'price too low');
     // 3. Done
@@ -79,18 +79,18 @@ contract UniswapGoblinConfig is Ownable, GoblinConfig {
   /// @dev Return the work factor for the goblin + ETH debt, using 1e4 as denom.
   function workFactor(
     address goblin,
-    uint256 /* debt */
-  ) external view returns (uint256) {
+    uint /* debt */
+  ) external view returns (uint) {
     require(isStable(goblin), '!stable');
-    return uint256(goblins[goblin].workFactor);
+    return uint(goblins[goblin].workFactor);
   }
 
   /// @dev Return the kill factor for the goblin + ETH debt, using 1e4 as denom.
   function killFactor(
     address goblin,
-    uint256 /* debt */
-  ) external view returns (uint256) {
+    uint /* debt */
+  ) external view returns (uint) {
     require(isStable(goblin), '!stable');
-    return uint256(goblins[goblin].killFactor);
+    return uint(goblins[goblin].killFactor);
   }
 }

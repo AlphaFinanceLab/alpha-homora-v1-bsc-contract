@@ -7,7 +7,7 @@ interface Strategy {
   /// @param data Extra calldata information passed along to this strategy.
   function execute(
     address user,
-    uint256 debt,
+    uint debt,
     bytes calldata data
   ) external payable;
 }
