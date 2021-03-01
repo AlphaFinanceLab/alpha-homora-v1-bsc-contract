@@ -1,9 +1,13 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapGoblin,
                      StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapPool1Goblin)
+from brownie import network
 from .utils import *
 from .constant import *
 import eth_abi
+
+# set default gas price
+network.gas_price('10 gwei')
 
 
 def deploy(deployer):
@@ -132,7 +136,8 @@ def test_busd_2(bank, registry):
 
 
 def main():
-    deployer = accounts.at('0xB593d82d53e2c187dc49673709a6E9f806cdC835', force=True)
+    deployer = accounts[8]
+    # deployer = accounts.at('0xB593d82d53e2c187dc49673709a6E9f806cdC835', force=True)
     # deployer = accounts.load('gh')
 
     # deploy bank
