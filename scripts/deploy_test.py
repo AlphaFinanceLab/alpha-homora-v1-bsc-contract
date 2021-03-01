@@ -5,6 +5,7 @@ from .utils import *
 import eth_abi
 from .constant import *
 
+
 def deploy_goblin(admin, pools, bank_config, bank, oracle, add_strat, liq_strat, rem_strat, goblin_config):
     wbnb = interface.IAny(wbnb_address)
 
@@ -28,6 +29,7 @@ def deploy_goblin(admin, pools, bank_config, bank, oracle, add_strat, liq_strat,
         })
     return res
 
+
 def deploy(admin, pools):
     triple_slope_model = TripleSlopeModel.deploy({'from': admin})
 
@@ -39,15 +41,16 @@ def deploy(admin, pools):
     bank = Bank.deploy(bank_config, {'from': admin})
 
     oracle = SimplePriceOracle.deploy({'from': admin})
-    
+
     # strats
     add_strat = StrategyAllBNBOnly.deploy(router_address, {'from': admin})
     liq_strat = StrategyLiquidate.deploy(router_address, {'from': admin})
     rem_strat = StrategyWithdrawMinimizeTrading.deploy(router_address, {'from': admin})
 
     goblin_config = PancakeswapGoblinConfig.deploy(oracle, {'from': admin})
-    
-    results = deploy_goblin(admin, pools, bank_config, bank, oracle, add_strat, liq_strat, rem_strat, goblin_config)
+
+    results = deploy_goblin(admin, pools, bank_config, bank, oracle,
+                            add_strat, liq_strat, rem_strat, goblin_config)
 
     print('bank', bank.address)
     print('bank_config', bank_config.address)
@@ -75,7 +78,8 @@ def main():
 
     wbnb = interface.IAny(wbnb_address)
     cake = interface.IAny(cake_address)
-    cake_goblin = next((res["goblin"] for res in results if res["pool"]["token"] == cake_address), None)
+    cake_goblin = next((res["goblin"]
+                        for res in results if res["pool"]["token"] == cake_address), None)
 
     # mint tokens
     mint_tokens(cake, alice)
