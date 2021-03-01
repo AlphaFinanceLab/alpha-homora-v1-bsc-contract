@@ -13,7 +13,15 @@ interface IAny {
 
   function transfer(address, uint) external;
 
+  function transferFrom(
+    address,
+    address,
+    uint
+  ) external;
+
   function approve(address, uint) external;
+
+  function lpToken() external view returns (address);
 
   function mint(
     address,
@@ -70,6 +78,10 @@ interface IAny {
       uint
     );
 
+  function createPair(address, address) external returns (address);
+
+  function getPair(address, address) external view returns (address);
+
   function totalSupply() external view returns (uint);
 
   function balanceOf(address) external view returns (uint);
@@ -117,4 +129,37 @@ interface IAny {
     uint,
     bytes calldata
   ) external;
+
+  function addLiquidity(
+    address,
+    address,
+    uint,
+    uint,
+    uint,
+    uint,
+    address,
+    uint
+  )
+    external
+    returns (
+      uint,
+      uint,
+      uint
+    );
+
+  function addLiquidityETH(
+    address token,
+    uint amountTokenDesired,
+    uint amountTokenMin,
+    uint amountETHMin,
+    address to,
+    uint deadline
+  )
+    external
+    payable
+    returns (
+      uint amountToken,
+      uint amountETH,
+      uint liquidity
+    );
 }
