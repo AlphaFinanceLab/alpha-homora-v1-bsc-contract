@@ -160,7 +160,7 @@ def main():
     #########################################################################
     # test work
 
-    test_cake(bank, registry, add_strat)
-    test_busd(bank, registry, add_strat)
-    test_cake_2(bank, registry)
-    test_busd_2(bank, registry)
+    # test_cake(bank, registry, add_strat)
+    # test_busd(bank, registry, add_strat)
+    # test_cake_2(bank, registry)
+    # test_busd_2(bank, registry)
