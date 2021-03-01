@@ -11,42 +11,52 @@ library TransferHelper {
   function safeApprove(
     address token,
     address to,
-    uint256 value
+    uint value
   ) internal {
     // bytes4(keccak256(bytes('approve(address,uint256)')));
     (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
-    require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: APPROVE_FAILED');
+    require(
+      success && (data.length == 0 || abi.decode(data, (bool))),
+      'TransferHelper: APPROVE_FAILED'
+    );
   }
 
   function safeTransfer(
     address token,
     address to,
-    uint256 value
+    uint value
   ) internal {
     // bytes4(keccak256(bytes('transfer(address,uint256)')));
     (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0xa9059cbb, to, value));
-    require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
+    require(
+      success && (data.length == 0 || abi.decode(data, (bool))),
+      'TransferHelper: TRANSFER_FAILED'
+    );
   }
 
   function safeTransferFrom(
     address token,
     address from,
     address to,
-    uint256 value
+    uint value
   ) internal {
     // bytes4(keccak256(bytes('transferFrom(address,address,uint256)')));
-    (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x23b872dd, from, to, value));
-    require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
+    (bool success, bytes memory data) =
+      token.call(abi.encodeWithSelector(0x23b872dd, from, to, value));
+    require(
+      success && (data.length == 0 || abi.decode(data, (bool))),
+      'TransferHelper: TRANSFER_FROM_FAILED'
+    );
   }
 
-  function safeTransferETH(address to, uint256 value) internal {
+  function safeTransferETH(address to, uint value) internal {
     (bool success, ) = to.call.value(value)(new bytes(0));
     require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
   }
 }
 
 contract IbETHRouter is Ownable {
-  using SafeMath for uint256;
+  using SafeMath for uint;
 
   address public router;
   address public ibETH;
@@ -63,9 +73,9 @@ contract IbETHRouter is Ownable {
     alpha = _alpha;
     address factory = IUniswapV2Router02(router).factory();
     lpToken = UniswapV2Library.pairFor(factory, ibETH, alpha);
-    IUniswapV2Pair(lpToken).approve(router, uint256(-1)); // 100% trust in the router
-    IBank(ibETH).approve(router, uint256(-1)); // 100% trust in the router
-    IERC20(alpha).approve(router, uint256(-1)); // 100% trust in the router
+    IUniswapV2Pair(lpToken).approve(router, uint(-1)); // 100% trust in the router
+    IBank(ibETH).approve(router, uint(-1)); // 100% trust in the router
+    IERC20(alpha).approve(router, uint(-1)); // 100% trust in the router
   }
 
   function() external payable {
@@ -74,9 +84,12 @@ contract IbETHRouter is Ownable {
 
   // **** ETH-ibETH FUNCTIONS ****
   // Get number of ibETH needed to withdraw to get exact amountETH from the Bank
-  function ibETHForExactETH(uint256 amountETH) public view returns (uint256) {
-    uint256 totalETH = IBank(ibETH).totalETH();
-    return totalETH == 0 ? amountETH : amountETH.mul(IBank(ibETH).totalSupply()).add(totalETH).sub(1).div(totalETH);
+  function ibETHForExactETH(uint amountETH) public view returns (uint) {
+    uint totalETH = IBank(ibETH).totalETH();
+    return
+      totalETH == 0
+        ? amountETH
+        : amountETH.mul(IBank(ibETH).totalSupply()).add(totalETH).sub(1).div(totalETH);
   }
 
   // Add ETH and Alpha from ibETH-Alpha Pool.
@@ -84,24 +97,24 @@ contract IbETHRouter is Ownable {
   // 2. Wrap ETH to ibETH.
   // 3. Provide liquidity to the pool.
   function addLiquidityETH(
-    uint256 amountAlphaDesired,
-    uint256 amountAlphaMin,
-    uint256 amountETHMin,
+    uint amountAlphaDesired,
+    uint amountAlphaMin,
+    uint amountETHMin,
     address to,
-    uint256 deadline
+    uint deadline
   )
     external
     payable
     returns (
-      uint256 amountAlpha,
-      uint256 amountETH,
-      uint256 liquidity
+      uint amountAlpha,
+      uint amountETH,
+      uint liquidity
     )
   {
     TransferHelper.safeTransferFrom(alpha, msg.sender, address(this), amountAlphaDesired);
     IBank(ibETH).deposit.value(msg.value)();
-    uint256 amountIbETHDesired = IBank(ibETH).balanceOf(address(this));
-    uint256 amountIbETH;
+    uint amountIbETHDesired = IBank(ibETH).balanceOf(address(this));
+    uint amountIbETH;
     (amountAlpha, amountIbETH, liquidity) = IUniswapV2Router02(router).addLiquidity(
       alpha,
       ibETH,
@@ -130,11 +143,11 @@ contract IbETHRouter is Ownable {
   /// @param resB amount of token B in reserve
   /// (forked from ./StrategyAddTwoSidesOptimal.sol)
   function optimalDeposit(
-    uint256 amtA,
-    uint256 amtB,
-    uint256 resA,
-    uint256 resB
-  ) internal pure returns (uint256 swapAmt, bool isReversed) {
+    uint amtA,
+    uint amtB,
+    uint resA,
+    uint resB
+  ) internal pure returns (uint swapAmt, bool isReversed) {
     if (amtA.mul(resB) >= amtB.mul(resA)) {
       swapAmt = _optimalDepositA(amtA, amtB, resA, resB);
       isReversed = false;
@@ -151,23 +164,23 @@ contract IbETHRouter is Ownable {
   /// @param resB amount of token B in reserve
   /// (forked from ./StrategyAddTwoSidesOptimal.sol)
   function _optimalDepositA(
-    uint256 amtA,
-    uint256 amtB,
-    uint256 resA,
-    uint256 resB
-  ) internal pure returns (uint256) {
+    uint amtA,
+    uint amtB,
+    uint resA,
+    uint resB
+  ) internal pure returns (uint) {
     require(amtA.mul(resB) >= amtB.mul(resA), 'Reversed');
 
-    uint256 a = 997;
-    uint256 b = uint256(1997).mul(resA);
-    uint256 _c = (amtA.mul(resB)).sub(amtB.mul(resA));
-    uint256 c = _c.mul(1000).div(amtB.add(resB)).mul(resA);
+    uint a = 997;
+    uint b = uint(1997).mul(resA);
+    uint _c = (amtA.mul(resB)).sub(amtB.mul(resA));
+    uint c = _c.mul(1000).div(amtB.add(resB)).mul(resA);
 
-    uint256 d = a.mul(c).mul(4);
-    uint256 e = Math.sqrt(b.mul(b).add(d));
+    uint d = a.mul(c).mul(4);
+    uint e = Math.sqrt(b.mul(b).add(d));
 
-    uint256 numerator = e.sub(b);
-    uint256 denominator = a.mul(2);
+    uint numerator = e.sub(b);
+    uint denominator = a.mul(2);
 
     return numerator.div(denominator);
   }
@@ -175,24 +188,30 @@ contract IbETHRouter is Ownable {
   // Add ibETH and Alpha to ibETH-Alpha Pool.
   // All ibETH and Alpha supplied are optimally swap and add too ibETH-Alpha Pool.
   function addLiquidityTwoSidesOptimal(
-    uint256 amountIbETHDesired,
-    uint256 amountAlphaDesired,
-    uint256 amountLPMin,
+    uint amountIbETHDesired,
+    uint amountAlphaDesired,
+    uint amountLPMin,
     address to,
-    uint256 deadline
-  ) external returns (uint256 liquidity) {
+    uint deadline
+  ) external returns (uint liquidity) {
     if (amountIbETHDesired > 0) {
       TransferHelper.safeTransferFrom(ibETH, msg.sender, address(this), amountIbETHDesired);
     }
     if (amountAlphaDesired > 0) {
       TransferHelper.safeTransferFrom(alpha, msg.sender, address(this), amountAlphaDesired);
     }
-    uint256 swapAmt;
+    uint swapAmt;
     bool isReversed;
     {
-      (uint256 r0, uint256 r1, ) = IUniswapV2Pair(lpToken).getReserves();
-      (uint256 ibETHReserve, uint256 alphaReserve) = IUniswapV2Pair(lpToken).token0() == ibETH ? (r0, r1) : (r1, r0);
-      (swapAmt, isReversed) = optimalDeposit(amountIbETHDesired, amountAlphaDesired, ibETHReserve, alphaReserve);
+      (uint r0, uint r1, ) = IUniswapV2Pair(lpToken).getReserves();
+      (uint ibETHReserve, uint alphaReserve) =
+        IUniswapV2Pair(lpToken).token0() == ibETH ? (r0, r1) : (r1, r0);
+      (swapAmt, isReversed) = optimalDeposit(
+        amountIbETHDesired,
+        amountAlphaDesired,
+        ibETHReserve,
+        alphaReserve
+      );
     }
     address[] memory path = new address[](2);
     (path[0], path[1]) = isReversed ? (alpha, ibETH) : (ibETH, alpha);
@@ -207,8 +226,8 @@ contract IbETHRouter is Ownable {
       to,
       deadline
     );
-    uint256 dustAlpha = IERC20(alpha).balanceOf(address(this));
-    uint256 dustIbETH = IBank(ibETH).balanceOf(address(this));
+    uint dustAlpha = IERC20(alpha).balanceOf(address(this));
+    uint dustIbETH = IBank(ibETH).balanceOf(address(this));
     if (dustAlpha > 0) {
       TransferHelper.safeTransfer(alpha, msg.sender, dustAlpha);
     }
@@ -221,22 +240,28 @@ contract IbETHRouter is Ownable {
   // Add ETH and Alpha to ibETH-Alpha Pool.
   // All ETH and Alpha supplied are optimally swap and add too ibETH-Alpha Pool.
   function addLiquidityTwoSidesOptimalETH(
-    uint256 amountAlphaDesired,
-    uint256 amountLPMin,
+    uint amountAlphaDesired,
+    uint amountLPMin,
     address to,
-    uint256 deadline
-  ) external payable returns (uint256 liquidity) {
+    uint deadline
+  ) external payable returns (uint liquidity) {
     if (amountAlphaDesired > 0) {
       TransferHelper.safeTransferFrom(alpha, msg.sender, address(this), amountAlphaDesired);
     }
     IBank(ibETH).deposit.value(msg.value)();
-    uint256 amountIbETHDesired = IBank(ibETH).balanceOf(address(this));
-    uint256 swapAmt;
+    uint amountIbETHDesired = IBank(ibETH).balanceOf(address(this));
+    uint swapAmt;
     bool isReversed;
     {
-      (uint256 r0, uint256 r1, ) = IUniswapV2Pair(lpToken).getReserves();
-      (uint256 ibETHReserve, uint256 alphaReserve) = IUniswapV2Pair(lpToken).token0() == ibETH ? (r0, r1) : (r1, r0);
-      (swapAmt, isReversed) = optimalDeposit(amountIbETHDesired, amountAlphaDesired, ibETHReserve, alphaReserve);
+      (uint r0, uint r1, ) = IUniswapV2Pair(lpToken).getReserves();
+      (uint ibETHReserve, uint alphaReserve) =
+        IUniswapV2Pair(lpToken).token0() == ibETH ? (r0, r1) : (r1, r0);
+      (swapAmt, isReversed) = optimalDeposit(
+        amountIbETHDesired,
+        amountAlphaDesired,
+        ibETHReserve,
+        alphaReserve
+      );
     }
     address[] memory path = new address[](2);
     (path[0], path[1]) = isReversed ? (alpha, ibETH) : (ibETH, alpha);
@@ -251,8 +276,8 @@ contract IbETHRouter is Ownable {
       to,
       deadline
     );
-    uint256 dustAlpha = IERC20(alpha).balanceOf(address(this));
-    uint256 dustIbETH = IBank(ibETH).balanceOf(address(this));
+    uint dustAlpha = IERC20(alpha).balanceOf(address(this));
+    uint dustIbETH = IBank(ibETH).balanceOf(address(this));
     if (dustAlpha > 0) {
       TransferHelper.safeTransfer(alpha, msg.sender, dustAlpha);
     }
@@ -267,14 +292,14 @@ contract IbETHRouter is Ownable {
   // 2. Unwrap ibETH to ETH.
   // 3. Return ETH and Alpha to caller.
   function removeLiquidityETH(
-    uint256 liquidity,
-    uint256 amountAlphaMin,
-    uint256 amountETHMin,
+    uint liquidity,
+    uint amountAlphaMin,
+    uint amountETHMin,
     address to,
-    uint256 deadline
-  ) public returns (uint256 amountAlpha, uint256 amountETH) {
+    uint deadline
+  ) public returns (uint amountAlpha, uint amountETH) {
     TransferHelper.safeTransferFrom(lpToken, msg.sender, address(this), liquidity);
-    uint256 amountIbETH;
+    uint amountIbETH;
     (amountAlpha, amountIbETH) = IUniswapV2Router02(router).removeLiquidity(
       alpha,
       ibETH,
@@ -298,18 +323,26 @@ contract IbETHRouter is Ownable {
   // 2. Swap ibETH for Alpha.
   // 3. Return Alpha to caller.
   function removeLiquidityAllAlpha(
-    uint256 liquidity,
-    uint256 amountAlphaMin,
+    uint liquidity,
+    uint amountAlphaMin,
     address to,
-    uint256 deadline
-  ) public returns (uint256 amountAlpha) {
+    uint deadline
+  ) public returns (uint amountAlpha) {
     TransferHelper.safeTransferFrom(lpToken, msg.sender, address(this), liquidity);
-    (uint256 removeAmountAlpha, uint256 removeAmountIbETH) =
-      IUniswapV2Router02(router).removeLiquidity(alpha, ibETH, liquidity, 0, 0, address(this), deadline);
+    (uint removeAmountAlpha, uint removeAmountIbETH) =
+      IUniswapV2Router02(router).removeLiquidity(
+        alpha,
+        ibETH,
+        liquidity,
+        0,
+        0,
+        address(this),
+        deadline
+      );
     address[] memory path = new address[](2);
     path[0] = ibETH;
     path[1] = alpha;
-    uint256[] memory amounts =
+    uint[] memory amounts =
       IUniswapV2Router02(router).swapExactTokensForTokens(removeAmountIbETH, 0, path, to, deadline);
     TransferHelper.safeTransfer(alpha, to, removeAmountAlpha);
     amountAlpha = removeAmountAlpha.add(amounts[1]);
@@ -321,15 +354,15 @@ contract IbETHRouter is Ownable {
   // 2. Wrap ETH to ibETH.
   // 3. Swap ibETH for Token
   function swapExactETHForAlpha(
-    uint256 amountAlphaOutMin,
+    uint amountAlphaOutMin,
     address to,
-    uint256 deadline
-  ) external payable returns (uint256[] memory amounts) {
+    uint deadline
+  ) external payable returns (uint[] memory amounts) {
     IBank(ibETH).deposit.value(msg.value)();
     address[] memory path = new address[](2);
     path[0] = ibETH;
     path[1] = alpha;
-    uint256[] memory swapAmounts =
+    uint[] memory swapAmounts =
       IUniswapV2Router02(router).swapExactTokensForTokens(
         IBank(ibETH).balanceOf(address(this)),
         amountAlphaOutMin,
@@ -337,7 +370,7 @@ contract IbETHRouter is Ownable {
         to,
         deadline
       );
-    amounts = new uint256[](2);
+    amounts = new uint[](2);
     amounts[0] = msg.value;
     amounts[1] = swapAmounts[1];
   }
@@ -347,17 +380,17 @@ contract IbETHRouter is Ownable {
   // 2. Swap Token for ibETH.
   // 3. Unwrap ibETH to ETH.
   function swapAlphaForExactETH(
-    uint256 amountETHOut,
-    uint256 amountAlphaInMax,
+    uint amountETHOut,
+    uint amountAlphaInMax,
     address to,
-    uint256 deadline
-  ) external returns (uint256[] memory amounts) {
+    uint deadline
+  ) external returns (uint[] memory amounts) {
     TransferHelper.safeTransferFrom(alpha, msg.sender, address(this), amountAlphaInMax);
     address[] memory path = new address[](2);
     path[0] = alpha;
     path[1] = ibETH;
     IBank(ibETH).withdraw(0);
-    uint256[] memory swapAmounts =
+    uint[] memory swapAmounts =
       IUniswapV2Router02(router).swapTokensForExactTokens(
         ibETHForExactETH(amountETHOut),
         amountAlphaInMax,
@@ -366,7 +399,7 @@ contract IbETHRouter is Ownable {
         deadline
       );
     IBank(ibETH).withdraw(swapAmounts[1]);
-    amounts = new uint256[](2);
+    amounts = new uint[](2);
     amounts[0] = swapAmounts[0];
     amounts[1] = address(this).balance;
     TransferHelper.safeTransferETH(to, address(this).balance);
@@ -380,19 +413,25 @@ contract IbETHRouter is Ownable {
   // 2. Swap Token for ibETH.
   // 3. Unwrap ibETH to ETH.
   function swapExactAlphaForETH(
-    uint256 amountAlphaIn,
-    uint256 amountETHOutMin,
+    uint amountAlphaIn,
+    uint amountETHOutMin,
     address to,
-    uint256 deadline
-  ) external returns (uint256[] memory amounts) {
+    uint deadline
+  ) external returns (uint[] memory amounts) {
     TransferHelper.safeTransferFrom(alpha, msg.sender, address(this), amountAlphaIn);
     address[] memory path = new address[](2);
     path[0] = alpha;
     path[1] = ibETH;
-    uint256[] memory swapAmounts =
-      IUniswapV2Router02(router).swapExactTokensForTokens(amountAlphaIn, 0, path, address(this), deadline);
+    uint[] memory swapAmounts =
+      IUniswapV2Router02(router).swapExactTokensForTokens(
+        amountAlphaIn,
+        0,
+        path,
+        address(this),
+        deadline
+      );
     IBank(ibETH).withdraw(swapAmounts[1]);
-    amounts = new uint256[](2);
+    amounts = new uint[](2);
     amounts[0] = swapAmounts[0];
     amounts[1] = address(this).balance;
     TransferHelper.safeTransferETH(to, amounts[1]);
@@ -404,18 +443,24 @@ contract IbETHRouter is Ownable {
   // 2. Wrap ETH to ibETH.
   // 3. Swap ibETH for Token
   function swapETHForExactAlpha(
-    uint256 amountAlphaOut,
+    uint amountAlphaOut,
     address to,
-    uint256 deadline
-  ) external payable returns (uint256[] memory amounts) {
+    uint deadline
+  ) external payable returns (uint[] memory amounts) {
     IBank(ibETH).deposit.value(msg.value)();
-    uint256 amountIbETHInMax = IBank(ibETH).balanceOf(address(this));
+    uint amountIbETHInMax = IBank(ibETH).balanceOf(address(this));
     address[] memory path = new address[](2);
     path[0] = ibETH;
     path[1] = alpha;
-    uint256[] memory swapAmounts =
-      IUniswapV2Router02(router).swapTokensForExactTokens(amountAlphaOut, amountIbETHInMax, path, to, deadline);
-    amounts = new uint256[](2);
+    uint[] memory swapAmounts =
+      IUniswapV2Router02(router).swapTokensForExactTokens(
+        amountAlphaOut,
+        amountIbETHInMax,
+        path,
+        to,
+        deadline
+      );
+    amounts = new uint[](2);
     amounts[0] = msg.value;
     amounts[1] = swapAmounts[1];
     // Transfer left over ETH back
@@ -433,7 +478,7 @@ contract IbETHRouter is Ownable {
   function recover(
     address token,
     address to,
-    uint256 value
+    uint value
   ) external onlyOwner {
     TransferHelper.safeTransfer(token, to, value);
   }
@@ -441,7 +486,7 @@ contract IbETHRouter is Ownable {
   /// @dev Recover ETH that were accidentally sent to this smart contract.
   /// @param to The address to send the ETH to.
   /// @param value The number of ETH to transfer to `to`.
-  function recoverETH(address to, uint256 value) external onlyOwner {
+  function recoverETH(address to, uint value) external onlyOwner {
     TransferHelper.safeTransferETH(to, value);
   }
 }
