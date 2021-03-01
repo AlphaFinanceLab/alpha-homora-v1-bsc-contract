@@ -12,7 +12,7 @@ import './SafeToken.sol';
 import './Goblin.sol';
 import './interfaces/IMasterChef.sol';
 
-// PancakeswapPool12Goblin is specific for CAKE-BNB pool in Pancakeswap.
+// PancakeswapPool1Goblin is specific for CAKE-BNB pool in Pancakeswap.
 // In this case, fToken = CAKE and pid = 1.
 contract PancakeswapPool1Goblin is Ownable, ReentrancyGuard, Goblin {
   /// @notice Libraries
