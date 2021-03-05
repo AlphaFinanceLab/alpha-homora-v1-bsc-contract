@@ -85,7 +85,7 @@ contract StrategyAddTwoSidesOptimal is Ownable, ReentrancyGuard, Strategy {
     return numerator.div(denominator);
   }
 
-  /// @dev Execute worker strategy. Take LP tokens + BNB. Return LP tokens + BNB.
+  /// @dev Execute worker strategy. Take fToken + BNB. Return LP tokens.
   /// @param user User address
   /// @param data Extra calldata information passed along to this strategy.
   function execute(
