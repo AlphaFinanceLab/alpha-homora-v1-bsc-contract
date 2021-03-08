@@ -36,7 +36,7 @@ contract UniswapGoblin is Ownable, ReentrancyGuard, Goblin {
   mapping(uint => uint) public shares;
   mapping(address => bool) public okStrats;
   uint public totalShare;
-  Strategy public addStrat;
+  Strategy public addStrat; // use StrategyAllBNBOnly strat (for reinvesting)
   Strategy public liqStrat;
   uint public reinvestBountyBps;
 

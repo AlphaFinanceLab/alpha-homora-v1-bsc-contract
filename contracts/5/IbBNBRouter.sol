@@ -129,7 +129,7 @@ contract IbBNBRouter is Ownable {
       TransferHelper.safeTransfer(alpha, msg.sender, amountAlphaDesired.sub(amountAlpha));
     }
     IBank(ibBNB).withdraw(amountIbBNBDesired.sub(amountIbBNB));
-    amountBNB = msg.value - address(this).balance;
+    amountBNB = msg.value.sub(address(this).balance);
     if (amountBNB > 0) {
       TransferHelper.safeTransferBNB(msg.sender, address(this).balance);
     }
@@ -313,7 +313,7 @@ contract IbBNBRouter is Ownable {
     IBank(ibBNB).withdraw(amountIbBNB);
     amountBNB = address(this).balance;
     if (amountBNB > 0) {
-      TransferHelper.safeTransferBNB(msg.sender, address(this).balance);
+      TransferHelper.safeTransferBNB(to, address(this).balance);
     }
     require(amountBNB >= amountBNBMin, 'IbBNBRouter: receive less BNB than amountBNBmin');
   }
@@ -466,8 +466,8 @@ contract IbBNBRouter is Ownable {
     // Transfer left over BNB back
     if (amountIbBNBInMax > swapAmounts[0]) {
       IBank(ibBNB).withdraw(amountIbBNBInMax.sub(swapAmounts[0]));
-      amounts[0] = msg.value - address(this).balance;
-      TransferHelper.safeTransferBNB(to, address(this).balance);
+      amounts[0] = msg.value.sub(address(this).balance);
+      TransferHelper.safeTransferBNB(msg.sender, address(this).balance);
     }
   }
 

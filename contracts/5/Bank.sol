@@ -105,6 +105,7 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
     uint total = totalBNB().sub(msg.value);
     uint share = total == 0 ? msg.value : msg.value.mul(totalSupply()).div(total);
     _mint(msg.sender, share);
+    require(totalSupply() >= 1e17);
   }
 
   /// @dev Withdraw BNB from the bank by burning the share tokens.
@@ -112,6 +113,8 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
     uint amount = share.mul(totalBNB()).div(totalSupply());
     _burn(msg.sender, share);
     SafeToken.safeTransferBNB(msg.sender, amount);
+    uint supply = totalSupply();
+    require(supply == 0 || supply >= 1e17);
   }
 
   /// @dev Create a new farming position to unlock your yield farming potential.

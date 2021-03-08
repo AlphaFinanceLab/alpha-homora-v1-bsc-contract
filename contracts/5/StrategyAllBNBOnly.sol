@@ -25,7 +25,7 @@ contract StrategyAllBNBOnly is Ownable, ReentrancyGuard, Strategy {
     wbnb = _router.WETH();
   }
 
-  /// @dev Execute worker strategy. Take LP tokens + BNB. Return LP tokens + BNB.
+  /// @dev Execute worker strategy. Take BNB. Return LP tokens.
   /// @param data Extra calldata information passed along to this strategy.
   function execute(
     address, /* user */

@@ -24,7 +24,7 @@ contract StrategyWithdrawMinimizeTrading is Ownable, ReentrancyGuard, Strategy {
     wbnb = _router.WETH();
   }
 
-  /// @dev Execute worker strategy. Take LP tokens + BNB. Return LP tokens + BNB.
+  /// @dev Execute worker strategy. Take LP tokens. Return fToken + BNB.
   /// @param user User address to withdraw liquidity.
   /// @param debt Debt amount in WAD of the user.
   /// @param data Extra calldata information passed along to this strategy.

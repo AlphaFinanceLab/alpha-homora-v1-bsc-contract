@@ -1072,6 +1072,8 @@ contract MStableStakingRewards is StakingTokenWrapper, RewardsDistributionRecipi
     }
     // new reward units to distribute = rewardRate * timeSinceLastUpdate
     uint rewardUnitsToDistribute = rewardRate.mul(lastTimeRewardApplicable().sub(lastUpdateTime));
+    // prevent overflow
+    require(rewardUnitsToDistribute < uint(-1).div(1e18));
     // new reward units per token = (rewardUnitsToDistribute * 1e18) / totalTokens
     uint unitsToDistributePerToken = rewardUnitsToDistribute.divPrecisely(stakedTokens);
     // return summed rate
