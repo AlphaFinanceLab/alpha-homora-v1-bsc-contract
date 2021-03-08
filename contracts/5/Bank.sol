@@ -3,12 +3,13 @@ import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/token/ERC20/ERC20.so
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/math/SafeMath.sol';
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/math/Math.sol';
 import './ReentrancyGuardUpgradeSafe.sol';
+import './Initializable.sol';
 import './Governable.sol';
 import './BankConfig.sol';
 import './Goblin.sol';
 import './SafeToken.sol';
 
-contract Bank is ERC20, ReentrancyGuardUpgradeSafe, Governable {
+contract Bank is Initializable, ERC20, ReentrancyGuardUpgradeSafe, Governable {
   /// @notice Libraries
   using SafeToken for address;
   using SafeMath for uint;
