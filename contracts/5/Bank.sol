@@ -56,9 +56,9 @@ contract Bank is ERC20, ReentrancyGuardUpgradeSafe, Governable {
     _;
   }
 
-  function initialize(BankConfig _config) external {
+  function initialize(BankConfig _config) external initializer {
     __Governable__init();
-    __ReentrancyGuardUpgradeSafe_init();
+    __ReentrancyGuardUpgradeSafe__init();
     config = _config;
     lastAccrueTime = now;
     nextPositionID = 1;
