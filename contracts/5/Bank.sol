@@ -1,14 +1,15 @@
 pragma solidity 0.5.16;
-import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/ownership/Ownable.sol';
-import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/token/ERC20/ERC20.sol';
+import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/token/ERC20/ERC20.sol'; // upgradeable
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/math/SafeMath.sol';
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/math/Math.sol';
-import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/utils/ReentrancyGuard.sol';
+import './ReentrancyGuardUpgradeSafe.sol';
+import './Initializable.sol';
+import './Governable.sol';
 import './BankConfig.sol';
 import './Goblin.sol';
 import './SafeToken.sol';
 
-contract Bank is ERC20, ReentrancyGuard, Ownable {
+contract Bank is Initializable, ERC20, ReentrancyGuardUpgradeSafe, Governable {
   /// @notice Libraries
   using SafeToken for address;
   using SafeMath for uint;
@@ -19,9 +20,9 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
   event Work(uint indexed id, uint loan);
   event Kill(uint indexed id, address indexed killer, uint prize, uint left);
 
-  string public name = 'Interest Bearing BNB';
-  string public symbol = 'ibBNB';
-  uint8 public decimals = 18;
+  string public name;
+  string public symbol;
+  uint8 public decimals;
 
   struct Position {
     address goblin;
@@ -31,7 +32,7 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
 
   BankConfig public config;
   mapping(uint => Position) public positions;
-  uint public nextPositionID = 1;
+  uint public nextPositionID;
 
   uint public glbDebtShare;
   uint public glbDebtVal;
@@ -56,9 +57,15 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
     _;
   }
 
-  constructor(BankConfig _config) public {
+  function initialize(BankConfig _config) external initializer {
+    __Governable__init();
+    __ReentrancyGuardUpgradeSafe__init();
     config = _config;
     lastAccrueTime = now;
+    nextPositionID = 1;
+    name = 'Interest Bearing BNB';
+    symbol = 'ibBNB';
+    decimals = 18;
   }
 
   /// @dev Return the pending interest that will be accrued in the next call.
@@ -219,21 +226,21 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
 
   /// @dev Update bank configuration to a new address. Must only be called by owner.
   /// @param _config The new configurator address.
-  function updateConfig(BankConfig _config) external onlyOwner {
+  function updateConfig(BankConfig _config) external onlyGov {
     config = _config;
   }
 
   /// @dev Withdraw BNB reserve for underwater positions to the given address.
   /// @param to The address to transfer BNB to.
   /// @param value The number of BNB tokens to withdraw. Must not exceed `reservePool`.
-  function withdrawReserve(address to, uint value) external onlyOwner nonReentrant {
+  function withdrawReserve(address to, uint value) external onlyGov nonReentrant {
     reservePool = reservePool.sub(value);
     SafeToken.safeTransferBNB(to, value);
   }
 
   /// @dev Reduce BNB reserve, effectively giving them to the depositors.
   /// @param value The number of BNB reserve to reduce.
-  function reduceReserve(uint value) external onlyOwner {
+  function reduceReserve(uint value) external onlyGov {
     reservePool = reservePool.sub(value);
   }
 
@@ -245,7 +252,7 @@ contract Bank is ERC20, ReentrancyGuard, Ownable {
     address token,
     address to,
     uint value
-  ) external onlyOwner nonReentrant {
+  ) external onlyGov nonReentrant {
     token.safeTransfer(to, value);
   }
 
