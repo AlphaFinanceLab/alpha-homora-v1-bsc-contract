@@ -1,5 +1,6 @@
 from brownie import accounts, interface, Contract
-from brownie import (TripleSlopeModel, ConfigurableInterestBankConfig, Bank, IbBNBRouter, )
+from brownie import (TripleSlopeModel, ConfigurableInterestBankConfig, Bank,
+                     IbBNBRouter, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
 from .utils import *
 from .constant import *
 
@@ -19,7 +20,11 @@ def main():
     # kill bps 500 (5%)
     bank_config = ConfigurableInterestBankConfig.deploy(
         2 * 10**17, 1000, 500, triple_slope_model, {'from': admin})
-    bank = Bank.deploy(bank_config, {'from': admin})
+    proxy_admin = ProxyAdminImpl.deploy({'from': admin})
+    bank_impl = Bank.deploy({'from': admin})
+    bank = TransparentUpgradeableProxyImpl.deploy(
+        bank_impl, proxy_admin, bank_impl.initialize.encode_input(bank_config), {'from': admin})
+    bank = interface.IAny(bank)
 
     # create pair
     factory = interface.IAny(interface.IAny(router_address).factory())

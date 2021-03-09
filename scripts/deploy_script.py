@@ -1,6 +1,6 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapGoblin,
-                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapPool1Goblin)
+                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapPool1Goblin, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
 from brownie import network
 from .utils import *
 from .constant import *
@@ -18,7 +18,12 @@ def deploy(deployer):
     # kill bps 500 (5%)
     bank_config = ConfigurableInterestBankConfig.deploy(
         2 * 10**17, 1000, 500, triple_slope_model, {'from': deployer})
-    bank = Bank.deploy(bank_config, {'from': deployer})
+
+    proxy_admin = ProxyAdminImpl.deploy({'from': deployer})
+    bank_impl = Bank.deploy({'from': deployer})
+    bank = TransparentUpgradeableProxyImpl.deploy(
+        bank_impl, proxy_admin, bank_impl.initialize.encode_input(bank_config), {'from': deployer})
+    bank = interface.IAny(bank)
 
     oracle = SimplePriceOracle.deploy({'from': deployer})
 
@@ -42,15 +47,24 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
     wbnb = interface.IAny(wbnb_address)
 
     prices = []
-    tokens = []
+    tokens0 = []
+    tokens1 = []
 
     registry = {}
 
     for pool in pools:
         fToken = interface.IAny(pool['token'])
-        price = (10**18 * wbnb.balanceOf(pool['lp'])) // fToken.balanceOf(pool['lp'])
-        prices.append(price)
-        tokens.append(fToken)
+
+        if fToken.address < wbnb_address:
+            tokens0.append(fToken)
+            tokens1.append(wbnb)
+            price = (10**18 * wbnb.balanceOf(pool['lp'])) // fToken.balanceOf(pool['lp'])
+            prices.append(price)
+        else:
+            tokens0.append(wbnb)
+            tokens1.append(fToken)
+            price = (10**18 * fToken.balanceOf(pool['lp'])) // wbnb.balanceOf(pool['lp'])
+            prices.append(price)
 
         if pool['pid'] == 1:
             goblin = PancakeswapPool1Goblin.deploy(
@@ -66,7 +80,7 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
         registry[pool['name']] = {'goblin': goblin, 'two_side': add_strat_2}
 
     # set oracle prices
-    oracle.setPrices(tokens, [wbnb] * len(tokens), prices, {'from': deployer})
+    oracle.setPrices(tokens0, tokens1, prices, {'from': deployer})
 
     return registry
 

@@ -1,6 +1,6 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapPool1Goblin,
-                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig)
+                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
 from .utils import *
 import eth_abi
 
@@ -17,7 +17,12 @@ def main():
     # kill bps 500 (5%)
     bank_config = ConfigurableInterestBankConfig.deploy(
         2 * 10**17, 1000, 500, triple_slope_model, {'from': admin})
-    bank = Bank.deploy(bank_config, {'from': admin})
+
+    proxy_admin = ProxyAdminImpl.deploy({'from': admin})
+    bank_impl = Bank.deploy({'from': admin})
+    bank = TransparentUpgradeableProxyImpl.deploy(
+        bank_impl, proxy_admin, bank_impl.initialize.encode_input(bank_config), {'from': admin})
+    bank = interface.IAny(bank)
 
     cake = interface.IAny('0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82')
     wbnb = interface.IAny('0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c')
@@ -48,8 +53,7 @@ def main():
     mint_tokens(wbnb, alice)
 
     # approve tokens
-    cake.approve(bank, 2**256-1, {'from': alice})
-    wbnb.approve(bank, 2**256-1, {'from': alice})
+    cake.approve(add_strat_2, 2**256-1, {'from': alice})
 
     # set goblin in bank config
     # work factor 72.5%
@@ -110,7 +114,7 @@ def main():
     ###########################################################
     # work (no borrow) with cake
     print('==============================================================')
-    print('Case 1. work (no borrow) with CAKE')
+    print('Case 3. work (no borrow) with CAKE')
 
     deposit_amt = 10**18
     cake_amt = 2 * 10**18
@@ -133,14 +137,14 @@ def main():
     ############################################################
     # work (borrow) with cake
     print('==============================================================')
-    print('Case 2. work 2x (borrow) with CAKE')
+    print('Case 4. work 2x (borrow) with CAKE')
 
     deposit_amt = 100 * 10**18
     borrow_amt = 100 * 10**18
     cake_amt = 200 * 10**18
 
     prevBNBBal = alice.balance()
-    prevCakeBal = cake.balanceof(alice)
+    prevCakeBal = cake.balanceOf(alice)
 
     bank.work(0, goblin, borrow_amt, 0, eth_abi.encode_abi(['address', 'bytes'], [
               add_strat_2.address, eth_abi.encode_abi(['address', 'uint256', 'uint256'], [cake.address, cake_amt, 0])]), {'from': alice, 'value': deposit_amt})
