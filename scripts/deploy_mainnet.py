@@ -67,33 +67,12 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
         # re-assign two side strat as add strat for pool 1 goblin
         if pool['pid'] == 1:
             goblin.setCriticalStrategies(add_strat_2, liq_strat, {'from': deployer})
+            goblin.setStrategyOk([add_strat], False, {'from': deployer})  # unset add_strat
 
         registry[pool['name']] = {'goblin': goblin,
                                   'two_side': add_strat_2, 'token': fToken.address}
 
     return registry
-
-
-def test_cake(bank, registry, add_strat):
-    alice = accounts[1]
-
-    prevBNBBal = alice.balance()
-
-    bank.work(0, registry['cake']['goblin'], 0, 0, eth_abi.encode_abi(['address', 'bytes'], [
-              add_strat.address, eth_abi.encode_abi(['address', 'uint256'], [cake_address, 0])]), {'from': alice, 'value': '1 ether'})
-
-    curBNBBal = alice.balance()
-
-    print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(1))
-
-    assert almostEqual(curBNBBal - prevBNBBal, -10**18), 'incorrect BNB input amount'
-
-    # test reinvest
-    chain.mine(10)
-
-    goblin = interface.IAny(registry['cake']['goblin'])
-    goblin.reinvest({'from': alice})
 
 
 def test_cake_2(bank, registry):
@@ -110,6 +89,12 @@ def test_cake_2(bank, registry):
     print('alice pos', bank.positionInfo(1))
 
     assert almostEqual(curBNBBal - prevBNBBal, -10**18), 'incorrect BNB input amount'
+
+    # test reinvest
+    chain.mine(10)
+
+    goblin = interface.IAny(registry['cake']['goblin'])
+    goblin.reinvest({'from': alice})
 
 
 def test_busd(bank, registry, add_strat):
@@ -174,7 +159,7 @@ def main():
             'token': cake_address,
             'lp': cake_lp_address,
             'pid': 1,
-            'goblinConfig': [True, 6250, 8000, 11000]
+            'goblinConfig': [True, 6250, 7000, 11000]
         },
         {
             'name': 'busd',
@@ -218,7 +203,6 @@ def main():
     #########################################################################
     # test work
 
-    # test_cake(bank, registry, add_strat)
     # test_busd(bank, registry, add_strat)
     # test_cake_2(bank, registry)
     # test_busd_2(bank, registry)
