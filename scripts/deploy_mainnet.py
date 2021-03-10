@@ -17,7 +17,7 @@ def deploy(deployer):
     # reserve pool bps 2000 (20%)
     # kill bps 100 (1%)
     bank_config = ConfigurableInterestBankConfig.deploy(
-        10**18, 1000, 100, triple_slope_model, {'from': deployer})
+        10**18, 2000, 100, triple_slope_model, {'from': deployer})
 
     proxy_admin = ProxyAdminImpl.deploy({'from': deployer})
     bank_impl = Bank.deploy({'from': deployer})
