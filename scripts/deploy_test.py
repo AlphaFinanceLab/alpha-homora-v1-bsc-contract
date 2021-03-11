@@ -1,6 +1,6 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapGoblin,
-                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapPool1Goblin)
+                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapPool1Goblin, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
 from .utils import *
 import eth_abi
 from .constant import *
@@ -12,8 +12,13 @@ def deploy_goblin(admin, pools, bank_config, bank, oracle, add_strat, liq_strat,
     res = []
     for pool in pools:
         fToken = interface.IAny(pool["token"])
-        price = (10**18 * wbnb.balanceOf(pool["lp"])) // fToken.balanceOf(pool["lp"])
-        oracle.setPrices([fToken], [wbnb], [price], {'from': admin})
+
+        if fToken.address < wbnb_address:
+            price = (10**18 * wbnb.balanceOf(pool['lp'])) // fToken.balanceOf(pool['lp'])
+            oracle.setPrices([fToken], [wbnb], [price], {'from': admin})
+        else:
+            price = (10**18 * fToken.balanceOf(pool['lp'])) // wbnb.balanceOf(pool['lp'])
+            oracle.setPrices([wbnb], [fToken], [price], {'from': admin})
 
         if pool['pid'] == 1:
             goblin = PancakeswapPool1Goblin.deploy(
@@ -42,7 +47,12 @@ def deploy(admin, pools):
     # kill bps 500 (5%)
     bank_config = ConfigurableInterestBankConfig.deploy(
         2 * 10**17, 1000, 500, triple_slope_model, {'from': admin})
-    bank = Bank.deploy(bank_config, {'from': admin})
+
+    proxy_admin = ProxyAdminImpl.deploy({'from': admin})
+    bank_impl = Bank.deploy({'from': admin})
+    bank = TransparentUpgradeableProxyImpl.deploy(
+        bank_impl, proxy_admin, bank_impl.initialize.encode_input(bank_config), {'from': admin})
+    bank = interface.IAny(bank)
 
     oracle = SimplePriceOracle.deploy({'from': admin})
 

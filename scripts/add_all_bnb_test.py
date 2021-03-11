@@ -1,6 +1,6 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapPool1Goblin,
-                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig)
+                     StrategyAllBNBOnly, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimal, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
 from .utils import *
 import eth_abi
 
@@ -17,7 +17,12 @@ def main():
     # kill bps 500 (5%)
     bank_config = ConfigurableInterestBankConfig.deploy(
         2 * 10**17, 1000, 500, triple_slope_model, {'from': admin})
-    bank = Bank.deploy(bank_config, {'from': admin})
+
+    proxy_admin = ProxyAdminImpl.deploy({'from': admin})
+    bank_impl = Bank.deploy({'from': admin})
+    bank = TransparentUpgradeableProxyImpl.deploy(
+        bank_impl, proxy_admin, bank_impl.initialize.encode_input(bank_config), {'from': admin})
+    bank = interface.IAny(bank)
 
     cake = interface.IAny('0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82')
     wbnb = interface.IAny('0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c')
@@ -43,10 +48,6 @@ def main():
     # mint tokens
     mint_tokens(cake, alice)
     mint_tokens(wbnb, alice)
-
-    # approve tokens
-    cake.approve(bank, 2**256-1, {'from': alice})
-    wbnb.approve(bank, 2**256-1, {'from': alice})
 
     # set goblin in bank config
     # work factor 72.5%

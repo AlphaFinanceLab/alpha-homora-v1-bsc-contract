@@ -162,4 +162,10 @@ interface IAny {
       uint amountETH,
       uint liquidity
     );
+
+  function positionInfo(uint) external view returns (uint, uint);
+
+  function withdraw(uint) external;
+
+  function reinvest() external;
 }
