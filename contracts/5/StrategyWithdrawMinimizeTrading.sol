@@ -15,13 +15,15 @@ contract StrategyWithdrawMinimizeTrading is Ownable, ReentrancyGuard, Strategy {
   IUniswapV2Factory public factory;
   IUniswapV2Router02 public router;
   address public wbnb;
+  address public fToken;
 
   /// @dev Create a new withdraw minimize trading strategy instance.
   /// @param _router The Uniswap router smart contract.
-  constructor(IUniswapV2Router02 _router) public {
+  constructor(IUniswapV2Router02 _router, address _fToken) public {
     factory = IUniswapV2Factory(_router.factory());
     router = _router;
     wbnb = _router.WETH();
+    fToken = _fToken;
   }
 
   /// @dev Execute worker strategy. Take LP tokens. Return fToken + BNB.
@@ -34,7 +36,8 @@ contract StrategyWithdrawMinimizeTrading is Ownable, ReentrancyGuard, Strategy {
     bytes calldata data
   ) external payable nonReentrant {
     // 1. Find out what farming token we are dealing with.
-    (address fToken, uint minFToken) = abi.decode(data, (address, uint));
+    (address _fToken, uint minFToken) = abi.decode(data, (address, uint));
+    require(_fToken == fToken, 'token mismatched');
     IUniswapV2Pair lpToken = IUniswapV2Pair(factory.getPair(fToken, wbnb));
     // 2. Remove all liquidity back to BNB and farming tokens.
     lpToken.approve(address(router), uint(-1));

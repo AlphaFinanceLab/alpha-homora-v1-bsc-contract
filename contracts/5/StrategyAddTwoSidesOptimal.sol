@@ -17,14 +17,20 @@ contract StrategyAddTwoSidesOptimal is Ownable, ReentrancyGuard, Strategy {
   IUniswapV2Router02 public router;
   address public wbnb;
   address public goblin;
+  address public fToken;
 
   /// @dev Create a new add two-side optimal strategy instance.
   /// @param _router The Uniswap router smart contract.
-  constructor(IUniswapV2Router02 _router, address _goblin) public {
+  constructor(
+    IUniswapV2Router02 _router,
+    address _goblin,
+    address _fToken
+  ) public {
     factory = IUniswapV2Factory(_router.factory());
     router = _router;
     wbnb = _router.WETH();
     goblin = _goblin;
+    fToken = _fToken;
   }
 
   /// @dev Throws if called by any account other than the goblin.
@@ -95,7 +101,8 @@ contract StrategyAddTwoSidesOptimal is Ownable, ReentrancyGuard, Strategy {
     bytes calldata data
   ) external payable onlyGoblin nonReentrant {
     // 1. Find out what farming token we are dealing with.
-    (address fToken, uint fAmount, uint minLPAmount) = abi.decode(data, (address, uint, uint));
+    (address _fToken, uint fAmount, uint minLPAmount) = abi.decode(data, (address, uint, uint));
+    require(_fToken == fToken, 'token mismatched');
     IUniswapV2Pair lpToken = IUniswapV2Pair(factory.getPair(fToken, wbnb));
     // 2. Compute the optimal amount of BNB and fToken to be converted.
     if (fAmount > 0) {
