@@ -92,7 +92,7 @@ contract Bank is Initializable, ERC20, ReentrancyGuardUpgradeSafe, Governable {
   /// @param debtVal The debt value to be converted.
   function debtValToShare(uint debtVal) public view returns (uint) {
     if (glbDebtShare == 0) return debtVal; // When there's no share, 1 share = 1 val.
-    return debtVal.mul(glbDebtShare).div(glbDebtVal);
+    return debtVal.mul(glbDebtShare).div(glbDebtVal).add(1);
   }
 
   /// @dev Return BNB value and debt of the given position. Be careful of unaccrued interests.
@@ -173,6 +173,10 @@ contract Bank is Initializable, ERC20, ReentrancyGuardUpgradeSafe, Governable {
     }
     // 5. Return excess BNB back.
     if (back > lessDebt) SafeToken.safeTransferBNB(msg.sender, back - lessDebt);
+
+    // 6. Check total debt share/value not too small
+    require(glbDebtShare >= 1e12, 'remaining global debt share too small');
+    require(glbDebtVal >= 1e12, 'remaining global debt value too small');
   }
 
   /// @dev Kill the given to the position. Liquidate it immediately if killFactor condition is met.
