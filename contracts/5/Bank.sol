@@ -112,7 +112,7 @@ contract Bank is Initializable, ERC20, ReentrancyGuardUpgradeSafe, Governable {
     uint total = totalBNB().sub(msg.value);
     uint share = total == 0 ? msg.value : msg.value.mul(totalSupply()).div(total);
     _mint(msg.sender, share);
-    require(totalSupply() >= 1e17);
+    require(totalSupply() >= 1e17, 'deposit: total supply too low');
   }
 
   /// @dev Withdraw BNB from the bank by burning the share tokens.
@@ -121,7 +121,7 @@ contract Bank is Initializable, ERC20, ReentrancyGuardUpgradeSafe, Governable {
     _burn(msg.sender, share);
     SafeToken.safeTransferBNB(msg.sender, amount);
     uint supply = totalSupply();
-    require(supply == 0 || supply >= 1e17);
+    require(supply == 0 || supply >= 1e17, 'withdraw: total supply too low');
   }
 
   /// @dev Create a new farming position to unlock your yield farming potential.
