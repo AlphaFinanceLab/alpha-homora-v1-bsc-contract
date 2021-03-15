@@ -55,8 +55,8 @@ def main():
     mint_tokens(wbnb, alice)
 
     # set goblin in bank config
-    # work factor 72.5%
-    # kill factor 80%
+    # work factor 62.5%
+    # kill factor 70%
     # max price diff 1.1x (11000)
     goblin_config = PancakeswapGoblinConfig.deploy(oracle, {'from': admin})
     goblin_config.setConfigs([goblin], [[True, 6250, 7000, 11000]], {'from': admin})
