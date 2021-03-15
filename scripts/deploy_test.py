@@ -27,7 +27,8 @@ def deploy_goblin(admin, pools, bank_config, bank, oracle, add_strat, liq_strat,
             goblin = PancakeswapGoblin.deploy(
                 bank, chef_address, router_address, pool['pid'], add_strat, liq_strat, 300, {'from': admin})
         goblin_config.setConfigs([goblin], [pool["goblinConfig"]], {'from': admin})
-        add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router_address, goblin, {'from': admin})
+        add_strat_2 = StrategyAddTwoSidesOptimal.deploy(
+            router_address, goblin, fToken, {'from': admin})
         goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': admin})
         bank_config.setGoblins([goblin], [goblin_config], {'from': admin})
 
@@ -95,6 +96,11 @@ def main():
     cake_goblin = next((res["goblin"]
                         for res in results if res["pool"]["token"] == cake_address), None)
 
+    # set whitelist cake
+    add_strat.setWhitelistTokens([cake], [True], {'from': admin})
+    liq_strat.setWhitelistTokens([cake], [True], {'from': admin})
+    rem_strat.setWhitelistTokens([cake], [True], {'from': admin})
+
     # mint tokens
     mint_tokens(cake, alice)
     mint_tokens(wbnb, alice)
@@ -105,14 +111,15 @@ def main():
 
     ###########################################################
     # work
-    prevBNBBal = alice.balance()
 
-    bank.work(0, cake_goblin, 0, 0, eth_abi.encode_abi(['address', 'bytes'], [
-              add_strat.address, eth_abi.encode_abi(['address', 'uint256'], [cake.address, 0])]), {'from': alice, 'value': '1 ether'})
+    # prevBNBBal = alice.balance()
 
-    curBNBBal = alice.balance()
+    # bank.work(0, cake_goblin, 0, 0, eth_abi.encode_abi(['address', 'bytes'], [
+    #           add_strat.address, eth_abi.encode_abi(['address', 'uint256'], [cake.address, 0])]), {'from': alice, 'value': '1 ether'})
 
-    print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(1))
+    # curBNBBal = alice.balance()
 
-    pass
+    # print('∆ bnb alice', curBNBBal - prevBNBBal)
+    # print('alice pos', bank.positionInfo(1))
+
+    # pass

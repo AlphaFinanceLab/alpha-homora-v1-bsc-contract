@@ -30,7 +30,7 @@ def main():
     router = '0x05ff2b0db69458a0750badebc4f9e13add608c7f'  # pancake router
 
     oracle = SimplePriceOracle.deploy({'from': admin})
-    oracle.setPrices([cake], [wbnb], [10**18 * 13 // 234], {'from': admin})
+    oracle.setPrices([cake], [wbnb], [10**18 * 10 // 263], {'from': admin})
 
     # strats
     add_strat = StrategyAllBNBOnly.deploy(router, {'from': admin})
@@ -42,8 +42,13 @@ def main():
         bank, chef, router, add_strat, liq_strat, 300, {'from': admin})
 
     # new strat
-    add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router, goblin, {'from': admin})
+    add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router, goblin, cake, {'from': admin})
     goblin.setStrategyOk([add_strat_2], True, {'from': admin})
+
+    # set whitelist cake
+    add_strat.setWhitelistTokens([cake], [True], {'from': admin})
+    liq_strat.setWhitelistTokens([cake], [True], {'from': admin})
+    rem_strat.setWhitelistTokens([cake], [True], {'from': admin})
 
     # mint tokens
     mint_tokens(cake, alice)
@@ -54,10 +59,23 @@ def main():
     # kill factor 80%
     # max price diff 1.1x (11000)
     goblin_config = PancakeswapGoblinConfig.deploy(oracle, {'from': admin})
-    goblin_config.setConfigs([goblin], [[True, 7250, 8000, 11000]], {'from': admin})
+    goblin_config.setConfigs([goblin], [[True, 6250, 7000, 11000]], {'from': admin})
     bank_config.setGoblins([goblin], [goblin_config], {'from': admin})
 
     bank.deposit({'from': bob, 'value': '1000 ether'})
+
+    ############################################################################################
+    print('==============')
+    print('Case 0. set up initial borrow')
+    alice = accounts[1]
+    bob = accounts[2]
+
+    bank.deposit({'from': bob, 'value': '2 ether'})
+
+    prevBNBBal = alice.balance()
+
+    bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
+                                                                              eth_abi.encode_abi(['address', 'uint256', 'uint256'], [cake.address, 0, 0])]), {'from': alice, 'value': '1 ether'})
 
     ###########################################################
     # work (no borrow)
@@ -74,9 +92,9 @@ def main():
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(1))
+    print('alice pos', bank.positionInfo(2))
 
-    pos_health, pos_debt = bank.positionInfo(1)
+    pos_health, pos_debt = bank.positionInfo(2)
     assert almostEqual(pos_health, 10 ** 18), 'position health should be ~1 BNB (swap fee 0.2%)'
     assert pos_debt == 0, 'position debt should be 0'
 
@@ -85,8 +103,8 @@ def main():
     print('==============================================================')
     print('Case 2. work 2x (borrow)')
 
-    deposit_amt = 100 * 10**18
-    borrow_amt = 100 * 10**18
+    deposit_amt = 1 * 10**18
+    borrow_amt = 1 * 10**18
 
     prevBNBBal = alice.balance()
 
@@ -96,10 +114,10 @@ def main():
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(2))
+    print('alice pos', bank.positionInfo(3))
 
-    pos_health, pos_debt = bank.positionInfo(2)
+    pos_health, pos_debt = bank.positionInfo(3)
     assert almostEqual(curBNBBal - prevBNBBal, -deposit_amt), 'incorrect deposit amt'
-    assert almostEqual(pos_debt, 100 * 10**18), 'debt != borrow amount'
+    assert almostEqual(pos_debt, 1 * 10**18), 'debt != borrow amount'
     assert almostEqual(pos_health, deposit_amt +
                        borrow_amt), 'position health should be ~ deposited + borrow amt'

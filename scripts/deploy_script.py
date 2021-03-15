@@ -73,7 +73,8 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
             goblin = PancakeswapGoblin.deploy(
                 bank, chef_address, router_address, pool['pid'], add_strat, liq_strat, 300, {'from': deployer})
         goblin_config.setConfigs([goblin], [pool['goblinConfig']], {'from': deployer})
-        add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router_address, goblin, {'from': deployer})
+        add_strat_2 = StrategyAddTwoSidesOptimal.deploy(
+            router_address, goblin, fToken, {'from': deployer})
         goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': deployer})
         bank_config.setGoblins([goblin], [goblin_config], {'from': deployer})
 
@@ -176,6 +177,11 @@ def main():
     # deploy pools
     registry = deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat,
                             bank_config, goblin_config, oracle, pools)
+
+    # set whitelist cake
+    add_strat.setWhitelistTokens([cake, busd], [True, True], {'from': admin})
+    liq_strat.setWhitelistTokens([cake, busd], [True, True], {'from': admin})
+    rem_strat.setWhitelistTokens([cake, busd], [True, True], {'from': admin})
 
     #########################################################################
     # test work

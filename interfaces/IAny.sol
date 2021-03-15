@@ -168,4 +168,6 @@ interface IAny {
   function withdraw(uint) external;
 
   function reinvest() external;
+
+  function nextPositionID() external view returns (uint);
 }

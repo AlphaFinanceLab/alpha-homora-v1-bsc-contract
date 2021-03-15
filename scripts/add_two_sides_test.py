@@ -45,8 +45,13 @@ def main():
         bank, chef, router, add_strat, liq_strat, 300, {'from': admin})
 
     # new strat
-    add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router, goblin, {'from': admin})
+    add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router, goblin, cake, {'from': admin})
     goblin.setStrategyOk([add_strat_2], True, {'from': admin})
+
+    # set whitelist cake
+    add_strat.setWhitelistTokens([cake], [True], {'from': admin})
+    liq_strat.setWhitelistTokens([cake], [True], {'from': admin})
+    rem_strat.setWhitelistTokens([cake], [True], {'from': admin})
 
     # mint tokens
     mint_tokens(cake, alice)
@@ -66,6 +71,19 @@ def main():
     # add some BNB to bank
     bank.deposit({'from': bob, 'value': '1000 ether'})
 
+    ############################################################################################
+    print('==============')
+    print('Case 0. set up initial borrow')
+    alice = accounts[1]
+    bob = accounts[2]
+
+    bank.deposit({'from': bob, 'value': '2 ether'})
+
+    prevBNBBal = alice.balance()
+
+    bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
+                                                                              eth_abi.encode_abi(['address', 'uint256', 'uint256'], [cake.address, 0, 0])]), {'from': alice, 'value': '1 ether'})
+
     ###########################################################
     # work (no borrow) with 0 cake
     print('==============================================================')
@@ -81,9 +99,9 @@ def main():
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(1))
+    print('alice pos', bank.positionInfo(2))
 
-    pos_health, pos_debt = bank.positionInfo(1)
+    pos_health, pos_debt = bank.positionInfo(2)
     assert almostEqual(pos_health, deposit_amt), 'position health should be ~1 BNB (swap fee 0.2%)'
     assert pos_debt == 0, 'position debt should be 0'
 
@@ -92,8 +110,8 @@ def main():
     print('==============================================================')
     print('Case 2. work 2x (borrow) with 0 CAKE')
 
-    deposit_amt = 100 * 10**18
-    borrow_amt = 100 * 10**18
+    deposit_amt = 1 * 10**18
+    borrow_amt = 1 * 10**18
 
     prevBNBBal = alice.balance()
 
@@ -103,9 +121,9 @@ def main():
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(2))
+    print('alice pos', bank.positionInfo(3))
 
-    pos_health, pos_debt = bank.positionInfo(2)
+    pos_health, pos_debt = bank.positionInfo(3)
     assert almostEqual(curBNBBal - prevBNBBal, -deposit_amt), 'incorrect deposit amt'
     assert almostEqual(pos_debt, borrow_amt), 'debt != borrow amount'
     assert almostEqual(pos_health, deposit_amt +
@@ -127,11 +145,11 @@ def main():
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(1))
+    print('alice pos', bank.positionInfo(4))
 
-    pos_health, pos_debt = bank.positionInfo(1)
-    assert almostEqual(pos_health, deposit_amt + cake_amt /
-                       cake_price), 'position health should be ~1 BNB (swap fee 0.2%)'
+    pos_health, pos_debt = bank.positionInfo(4)
+    assert almostEqual(pos_health, deposit_amt + cake_amt * cake_price // 10 **
+                       18), 'position health should be ~1 BNB (swap fee 0.2%)'
     assert pos_debt == 0, 'position debt should be 0'
 
     ############################################################
@@ -139,9 +157,9 @@ def main():
     print('==============================================================')
     print('Case 4. work 2x (borrow) with CAKE')
 
-    deposit_amt = 100 * 10**18
-    borrow_amt = 100 * 10**18
-    cake_amt = 200 * 10**18
+    deposit_amt = 1 * 10**18
+    borrow_amt = 1 * 10**18
+    cake_amt = 2 * 10**18
 
     prevBNBBal = alice.balance()
     prevCakeBal = cake.balanceOf(alice)
@@ -154,10 +172,10 @@ def main():
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
     print('∆ cake alice', curCakeBal - prevCakeBal)
-    print('alice pos', bank.positionInfo(2))
+    print('alice pos', bank.positionInfo(5))
 
-    pos_health, pos_debt = bank.positionInfo(2)
+    pos_health, pos_debt = bank.positionInfo(5)
     assert almostEqual(curBNBBal - prevBNBBal, -deposit_amt), 'incorrect deposit amt'
     assert almostEqual(pos_debt, borrow_amt), 'debt != input + borrow'
     assert almostEqual(pos_health, deposit_amt +
-                       borrow_amt + cake_amt / cake_price), 'position health should be ~ deposited + borrow amt'
+                       borrow_amt + cake_amt * cake_price // 10**18), 'position health should be ~ deposited + borrow amt'
