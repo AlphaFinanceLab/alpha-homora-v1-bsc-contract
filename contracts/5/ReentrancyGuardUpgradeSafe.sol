@@ -18,7 +18,7 @@ contract ReentrancyGuardUpgradeSafe is Initializable {
   // counter to allow mutex lock with only one SSTORE operation
   uint private _guardCounter;
 
-  function __ReentrancyGuardUpgradeSafe__init() public initializer {
+  function __ReentrancyGuardUpgradeSafe__init() internal initializer {
     // The counter starts at one to prevent changing it from zero to a non-zero
     // value, which is a more expensive operation.
     _guardCounter = 1;
