@@ -25,7 +25,8 @@ def deploy(deployer):
         bank_impl, proxy_admin, bank_impl.initialize.encode_input(bank_config), {'from': deployer})
     bank = interface.IAny(bank)
 
-    oracle = SimplePriceOracle.deploy({'from': deployer})
+    # oracle = SimplePriceOracle.deploy({'from': deployer})
+    oracle = SimplePriceOracle.at('0xc0d0A48F8Feec21B60Cf8BA2A372199ebf3B740a')
 
     # strats
     add_strat = StrategyAllBNBOnly.deploy(router_address, {'from': deployer})
@@ -60,7 +61,8 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
             goblin = PancakeswapGoblin.deploy(
                 bank, chef_address, router_address, pool['pid'], add_strat, liq_strat, 30, {'from': deployer})
         goblin_config.setConfigs([goblin], [pool['goblinConfig']], {'from': deployer})
-        add_strat_2 = StrategyAddTwoSidesOptimal.deploy(router_address, goblin, {'from': deployer})
+        add_strat_2 = StrategyAddTwoSidesOptimal.deploy(
+            router_address, goblin, fToken, {'from': deployer})
         goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': deployer})
         bank_config.setGoblins([goblin], [goblin_config], {'from': deployer})
 
@@ -129,26 +131,60 @@ def test_busd_2(bank, registry):
     assert almostEqual(curBNBBal - prevBNBBal, -10**18), 'incorrect BNB input amount'
 
 
-def test_token(bank, registry, token_name):
+def test_token_1(bank, registry, token_name):
     alice = accounts[1]
+    bob = accounts[2]
+
+    bank.deposit({'from': bob, 'value': '2 ether'})
 
     prevBNBBal = alice.balance()
 
-    bank.work(0, registry[token_name]['goblin'], 0, 0, eth_abi.encode_abi(['address', 'bytes'], [
-              registry[token_name]['two_side'].address, eth_abi.encode_abi(['address', 'uint256', 'uint256'], [registry[token_name]['token'], 0, 0])]), {'from': alice, 'value': '1 ether'})
+    bank.work(0, registry[token_name]['goblin'], 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [registry[token_name]['two_side'].address,
+                                                                                                      eth_abi.encode_abi(['address', 'uint256', 'uint256'], [registry[token_name]['token'], 0, 0])]), {'from': alice, 'value': '1 ether'})
 
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
-    print('alice pos', bank.positionInfo(1))
+
+    pos_id = bank.nextPositionID() - 1
+    print('alice pos', bank.positionInfo(pos_id))
+
+
+def test_token(bank, registry, liq_strat, token_name):
+    alice = accounts[1]
+    bob = accounts[2]
+
+    bank.deposit({'from': bob, 'value': '2 ether'})
+
+    prevBNBBal = alice.balance()
+
+    bank.work(0, registry[token_name]['goblin'], 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [registry[token_name]['two_side'].address,
+                                                                                                      eth_abi.encode_abi(['address', 'uint256', 'uint256'], [registry[token_name]['token'], 0, 0])]), {'from': alice, 'value': '1 ether'})
+
+    curBNBBal = alice.balance()
+
+    print('∆ bnb alice', curBNBBal - prevBNBBal)
+
+    pos_id = bank.nextPositionID() - 1
+    print('alice pos', bank.positionInfo(pos_id))
 
     assert almostEqual(curBNBBal - prevBNBBal, -10**18), 'incorrect BNB input amount'
+
+    prevBNBBal = alice.balance()
+
+    bank.work(pos_id, registry[token_name]['goblin'], 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
+              liq_strat.address, eth_abi.encode_abi(['address', 'uint256'], [registry[token_name]['token'], 0])]), {'from': alice})
+
+    curBNBBal = alice.balance()
+
+    print('∆ bnb alice', curBNBBal - prevBNBBal)
+    print('alice pos', bank.positionInfo(pos_id))
 
 
 def main():
     deployer = accounts[8]
-    # deployer = accounts.at('0xB593d82d53e2c187dc49673709a6E9f806cdC835', force=True)
-    # deployer = accounts.load('gh')
+    # deployer = accounts.at('0x4D4DA0D03F6f087697bbf13378a21E8ff6aF1a58', force=True)
+    # deployer = accounts.load('')
 
     # deploy bank
     bank, add_strat, liq_strat, rem_strat, bank_config, goblin_config, oracle = deploy(deployer)
@@ -200,6 +236,15 @@ def main():
     registry = deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat,
                             bank_config, goblin_config, oracle, pools)
 
+    # set whitelist tokens to add_strat (no CAKE)
+    add_fTokens = list(map(lambda pool: pool['token'], pools[1:]))
+    add_strat.setWhitelistTokens(add_fTokens, [True] * len(add_fTokens), {'from': deployer})
+
+    # set whitelist tokens to liq_strat, rem_strat
+    fTokens = list(map(lambda pool: pool['token'], pools))
+    liq_strat.setWhitelistTokens(fTokens, [True] * len(fTokens), {'from': deployer})
+    rem_strat.setWhitelistTokens(fTokens, [True] * len(fTokens), {'from': deployer})
+
     #########################################################################
     # test work
 
@@ -207,9 +252,11 @@ def main():
     # test_cake_2(bank, registry)
     # test_busd_2(bank, registry)
 
-    # test_token(bank, registry, 'cake')
-    # test_token(bank, registry, 'busd')
-    # test_token(bank, registry, 'btcb')
-    # test_token(bank, registry, 'eth')
-    # test_token(bank, registry, 'usdt')
-    # test_token(bank, registry, 'alpha')
+    # test_token_1(bank, registry, 'cake')
+
+    # test_token(bank, registry, liq_strat, 'cake')
+    # test_token(bank, registry, liq_strat, 'busd')
+    # test_token(bank, registry, liq_strat, 'btcb')
+    # test_token(bank, registry, liq_strat, 'eth')
+    # test_token(bank, registry, liq_strat, 'usdt')
+    # test_token(bank, registry, liq_strat, 'alpha')
