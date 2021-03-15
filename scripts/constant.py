@@ -35,63 +35,63 @@ pools = [
         "token": cake_address,
         "lp": cake_lp_address,
         "pid": 1,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 6250, 7000, 11000]
     },
     {
         "name": "busd",
         "token": busd_address,
         "lp": busd_lp_address,
         "pid": 2,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "btcb",
         "token": btcb_address,
         "lp": btcb_lp_address,
         "pid": 15,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "eth",
         "token": eth_address,
         "lp": eth_lp_address,
         "pid": 14,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "usdt",
         "token": usdt_address,
         "lp": usdt_lp_address,
         "pid": 17,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "uni",
         "token": uni_address,
         "lp": uni_lp_address,
         "pid": 25,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "link",
         "token": link_address,
         "lp": link_lp_address,
         "pid": 7,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "band",
         "token": band_address,
         "lp": band_lp_address,
         "pid": 4,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "yfi",
         "token": yfi_address,
         "lp": yfi_lp_address,
         "pid": 24,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 7000, 8000, 11000]
     },
     {
         "name": "alpha",
@@ -105,13 +105,13 @@ pools = [
         "token": ltc_address,
         "lp": ltc_lp_address,
         "pid": 54,
-        "goblinConfig": [True, 5500, 6000, 11000]
+        "goblinConfig": [True, 6250, 7000, 11000]
     },
     {
         "name": "front",
         "token": front_address,
         "lp": front_lp_address,
         "pid": 57,
-        "goblinConfig": [True, 7250, 8000, 11000]
+        "goblinConfig": [True, 5250, 6000, 11000]
     },
 ]
