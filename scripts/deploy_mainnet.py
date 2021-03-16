@@ -50,6 +50,8 @@ def deploy_pools(deployer, bank, add_strat, liq_strat, rem_strat, bank_config, g
     registry = {}
 
     for pool in pools:
+        print('==============================')
+        print('deploying pool', pool['name'])
         fToken = interface.IAny(pool['token'])
 
         if pool['pid'] == 1:
@@ -150,16 +152,27 @@ def test_token_1(bank, registry, token_name):
     print('alice pos', bank.positionInfo(pos_id))
 
 
-def test_token(bank, registry, liq_strat, token_name):
+def test_token(bank, registry, add_strat, liq_strat, rem_strat, token_name):
+    print('================================================')
+    print('Testing', token_name)
+
     alice = accounts[1]
     bob = accounts[2]
+
+    goblin = registry[token_name]['goblin']
+    fToken = registry[token_name]['token']
+    add_strat_2 = registry[token_name]['two_side']
+
+    print('goblin', goblin)
+    print('fToken', fToken)
+    print('add_strat_2', add_strat_2)
 
     bank.deposit({'from': bob, 'value': '2 ether'})
 
     prevBNBBal = alice.balance()
 
-    bank.work(0, registry[token_name]['goblin'], 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [registry[token_name]['two_side'].address,
-                                                                                                      eth_abi.encode_abi(['address', 'uint256', 'uint256'], [registry[token_name]['token'], 0, 0])]), {'from': alice, 'value': '1 ether'})
+    bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
+                                                                              eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
 
     curBNBBal = alice.balance()
 
@@ -172,13 +185,43 @@ def test_token(bank, registry, liq_strat, token_name):
 
     prevBNBBal = alice.balance()
 
-    bank.work(pos_id, registry[token_name]['goblin'], 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
-              liq_strat.address, eth_abi.encode_abi(['address', 'uint256'], [registry[token_name]['token'], 0])]), {'from': alice})
+    bank.work(pos_id, goblin, 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
+              liq_strat.address, eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice})
 
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
     print('alice pos', bank.positionInfo(pos_id))
+
+    if token_name == 'cake':
+        bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
+                                                                                  eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
+    else:
+        bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat.address,
+                                                                                  eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice, 'value': '1 ether'})
+
+    pos_id = bank.nextPositionID() - 1
+
+    bank.work(pos_id, goblin, 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
+              rem_strat.address, eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice})
+
+    print('reinvesting')
+    goblin.reinvest({'from': alice})
+
+    print('liquidating')
+    bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
+                                                                              eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
+
+    pos_id = bank.nextPositionID() - 1
+
+    pre_bank_bal = bank.balance()
+
+    goblin.liquidate(pos_id, {'from': bank, 'gas_price': 0})
+
+    post_bank_bal = bank.balance()
+
+    print('liq gain', post_bank_bal - pre_bank_bal)
+    assert post_bank_bal - pre_bank_bal > 0, 'liq gets 0'
 
 
 def main():
@@ -224,7 +267,8 @@ def main():
             "lp": usdt_lp_address,
             "pid": 17,
             "goblinConfig": [True, 7000, 8000, 11000]
-        }, {
+        },
+        {
             "name": "alpha",
             "token": alpha_address,
             "lp": alpha_lp_address,
@@ -252,11 +296,10 @@ def main():
     # test_cake_2(bank, registry)
     # test_busd_2(bank, registry)
 
-    # test_token_1(bank, registry, 'cake')
-
-    # test_token(bank, registry, liq_strat, 'cake')
-    # test_token(bank, registry, liq_strat, 'busd')
-    # test_token(bank, registry, liq_strat, 'btcb')
-    # test_token(bank, registry, liq_strat, 'eth')
-    # test_token(bank, registry, liq_strat, 'usdt')
-    # test_token(bank, registry, liq_strat, 'alpha')
+    test_token_1(bank, registry, 'cake')  # make sure remaining debt is not too small
+    test_token(bank, registry, add_strat, liq_strat, rem_strat, 'cake')
+    test_token(bank, registry, add_strat, liq_strat, rem_strat, 'busd')
+    test_token(bank, registry, add_strat, liq_strat, rem_strat, 'btcb')
+    test_token(bank, registry, add_strat, liq_strat, rem_strat, 'eth')
+    test_token(bank, registry, add_strat, liq_strat, rem_strat, 'alpha')
+    test_token(bank, registry, add_strat, liq_strat, rem_strat, 'usdt')
