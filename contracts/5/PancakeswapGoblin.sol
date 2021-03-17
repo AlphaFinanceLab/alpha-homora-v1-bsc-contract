@@ -2,7 +2,7 @@ pragma solidity 0.5.16;
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/ownership/Ownable.sol';
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/math/SafeMath.sol';
 import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/utils/ReentrancyGuard.sol';
-import './mstable/IMStableStakingRewards.sol';
+import 'OpenZeppelin/openzeppelin-contracts@2.3.0/contracts/token/ERC20/IERC20.sol';
 import 'Uniswap/uniswap-v2-core@1.0.1/contracts/interfaces/IUniswapV2Factory.sol';
 import 'Uniswap/uniswap-v2-core@1.0.1/contracts/interfaces/IUniswapV2Pair.sol';
 import 'Uniswap/uniswap-v2-core@1.0.1/contracts/libraries/Math.sol';
@@ -10,10 +10,9 @@ import './uniswap/IUniswapV2Router02.sol';
 import './Strategy.sol';
 import './SafeToken.sol';
 import './Goblin.sol';
+import './interfaces/IMasterChef.sol';
 
-// MStableGoblin is specific for MTA-BNB pool in Uniswap.
-// In this case, fToken and reward token, namely MTA, are the same.
-contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
+contract PancakeswapGoblin is Ownable, ReentrancyGuard, Goblin {
   /// @notice Libraries
   using SafeToken for address;
   using SafeMath for uint;
@@ -25,46 +24,55 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
   event Liquidate(uint indexed id, uint wad);
 
   /// @notice Immutable variables
-  IMStableStakingRewards public staking;
+  IMasterChef public masterChef;
   IUniswapV2Factory public factory;
   IUniswapV2Router02 public router;
   IUniswapV2Pair public lpToken;
   address public wbnb;
-  address public mta;
+  address public fToken;
+  address public cake;
   address public operator;
+  uint public pid;
 
   /// @notice Mutable state variables
   mapping(uint => uint) public shares;
   mapping(address => bool) public okStrats;
   uint public totalShare;
-  Strategy public addStrat; // use StrategyTwoSidesOptimal strat (for reinvesting)
+  Strategy public addStrat; // use StrategyAllBNBOnly strat (for reinvesting)
   Strategy public liqStrat;
   uint public reinvestBountyBps;
 
   constructor(
     address _operator,
-    IMStableStakingRewards _staking,
+    IMasterChef _masterChef,
     IUniswapV2Router02 _router,
-    address _mta,
+    uint _pid,
     Strategy _addStrat,
     Strategy _liqStrat,
     uint _reinvestBountyBps
   ) public {
     operator = _operator;
     wbnb = _router.WETH();
-    staking = _staking;
+    masterChef = _masterChef;
     router = _router;
     factory = IUniswapV2Factory(_router.factory());
-    mta = _mta;
-    lpToken = IUniswapV2Pair(factory.getPair(wbnb, _mta));
+    // Get lpToken and fToken from MasterChef pool
+    pid = _pid;
+    (IERC20 _lpToken, , , ) = masterChef.poolInfo(_pid);
+    lpToken = IUniswapV2Pair(address(_lpToken));
+    address token0 = lpToken.token0();
+    address token1 = lpToken.token1();
+    fToken = token0 == wbnb ? token1 : token0;
+    cake = address(masterChef.cake());
     addStrat = _addStrat;
     liqStrat = _liqStrat;
     okStrats[address(addStrat)] = true;
     okStrats[address(liqStrat)] = true;
     reinvestBountyBps = _reinvestBountyBps;
-    lpToken.approve(address(_staking), uint(-1)); // 100% trust in the staking pool
+    lpToken.approve(address(_masterChef), uint(-1)); // 100% trust in the staking pool
     lpToken.approve(address(router), uint(-1)); // 100% trust in the router
-    _mta.safeApprove(address(router), uint(-1)); // 100% trust in the router
+    fToken.safeApprove(address(router), uint(-1)); // 100% trust in the router
+    cake.safeApprove(address(router), uint(-1)); // 100% trust in the router
   }
 
   /// @dev Require that the caller must be an EOA account to avoid flash loans.
@@ -83,7 +91,7 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
   /// @param share The number of shares to be converted to LP balance.
   function shareToBalance(uint share) public view returns (uint) {
     if (totalShare == 0) return share; // When there's no share, 1 share = 1 balance.
-    uint totalBalance = staking.balanceOf(address(this));
+    (uint totalBalance, ) = masterChef.userInfo(pid, address(this));
     return share.mul(totalBalance).div(totalShare);
   }
 
@@ -91,25 +99,28 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
   /// @param balance the number of LP tokens to be converted to shares.
   function balanceToShare(uint balance) public view returns (uint) {
     if (totalShare == 0) return balance; // When there's no share, 1 share = 1 balance.
-    uint totalBalance = staking.balanceOf(address(this));
+    (uint totalBalance, ) = masterChef.userInfo(pid, address(this));
     return balance.mul(totalShare).div(totalBalance);
   }
 
   /// @dev Re-invest whatever this worker has earned back to staked LP tokens.
   function reinvest() public onlyEOA nonReentrant {
     // 1. Withdraw all the rewards.
-    staking.claimReward();
-    uint reward = mta.myBalance();
+    masterChef.withdraw(pid, 0);
+    uint reward = cake.balanceOf(address(this));
     if (reward == 0) return;
     // 2. Send the reward bounty to the caller.
     uint bounty = reward.mul(reinvestBountyBps) / 10000;
-    mta.safeTransfer(msg.sender, bounty);
-    // 3. Use add Two-side optimal strategy to convert MTA to BNB and add
-    // liquidity to get LP tokens.
-    mta.safeTransfer(address(addStrat), reward.sub(bounty));
-    addStrat.execute(address(this), 0, abi.encode(mta, 0, 0));
-    // 4. Mint more LP tokens and stake them for more rewards.
-    staking.stake(lpToken.balanceOf(address(this)));
+    cake.safeTransfer(msg.sender, bounty);
+    // 3. Convert all the remaining rewards to BNB.
+    address[] memory path = new address[](2);
+    path[0] = address(cake);
+    path[1] = address(wbnb);
+    router.swapExactTokensForETH(reward.sub(bounty), 0, path, address(this), now);
+    // 4. Use add BNB strategy to convert all BNB to LP tokens.
+    addStrat.execute.value(address(this).balance)(address(0), 0, abi.encode(fToken, 0));
+    // 5. Mint more LP tokens and stake them for more rewards.
+    masterChef.deposit(pid, lpToken.balanceOf(address(this)));
     emit Reinvest(msg.sender, reward, bounty);
   }
 
@@ -137,7 +148,7 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
     SafeToken.safeTransferBNB(msg.sender, address(this).balance);
   }
 
-  /// @dev Return maximum output given the input amount and the status of mtaswap reserves.
+  /// @dev Return maximum output given the input amount and the status of Uniswap reserves.
   /// @param aIn The amount of asset to market sell.
   /// @param rIn the amount of asset in reserve for input.
   /// @param rOut The amount of asset in reserve for output.
@@ -162,12 +173,15 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
     uint lpSupply = lpToken.totalSupply(); // Ignore pending mintFee as it is insignificant
     // 2. Get the pool's total supply of WBNB and farming token.
     (uint r0, uint r1, ) = lpToken.getReserves();
-    (uint totalWBNB, uint totalMTA) = lpToken.token0() == wbnb ? (r0, r1) : (r1, r0);
+    (uint totalWBNB, uint totalfToken) = lpToken.token0() == wbnb ? (r0, r1) : (r1, r0);
     // 3. Convert the position's LP tokens to the underlying assets.
     uint userWBNB = lpBalance.mul(totalWBNB).div(lpSupply);
-    uint userMTA = lpBalance.mul(totalMTA).div(lpSupply);
+    uint userfToken = lpBalance.mul(totalfToken).div(lpSupply);
     // 4. Convert all farming tokens to BNB and return total BNB.
-    return getMktSellAmount(userMTA, totalMTA.sub(userMTA), totalWBNB.sub(userWBNB)).add(userWBNB);
+    return
+      getMktSellAmount(userfToken, totalfToken.sub(userfToken), totalWBNB.sub(userWBNB)).add(
+        userWBNB
+      );
   }
 
   /// @dev Liquidate the given position by converting it to BNB and return back to caller.
@@ -176,7 +190,7 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
     // 1. Convert the position back to LP tokens and use liquidate strategy.
     _removeShare(id);
     lpToken.transfer(address(liqStrat), lpToken.balanceOf(address(this)));
-    liqStrat.execute(address(0), 0, abi.encode(mta, 0));
+    liqStrat.execute(address(0), 0, abi.encode(fToken, 0));
     // 2. Return all available BNB back to the operator.
     uint wad = address(this).balance;
     SafeToken.safeTransferBNB(msg.sender, wad);
@@ -188,7 +202,7 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
     uint balance = lpToken.balanceOf(address(this));
     if (balance > 0) {
       uint share = balanceToShare(balance);
-      staking.stake(balance);
+      masterChef.deposit(pid, balance);
       shares[id] = shares[id].add(share);
       totalShare = totalShare.add(share);
       emit AddShare(id, share);
@@ -200,7 +214,7 @@ contract MStableGoblin is Ownable, ReentrancyGuard, Goblin {
     uint share = shares[id];
     if (share > 0) {
       uint balance = shareToBalance(share);
-      staking.withdraw(balance);
+      masterChef.withdraw(pid, balance);
       totalShare = totalShare.sub(share);
       shares[id] = 0;
       emit RemoveShare(id, share);
