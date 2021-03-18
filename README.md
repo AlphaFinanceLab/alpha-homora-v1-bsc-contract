@@ -6,17 +6,17 @@ The repository contains the smart contracts of [AlphaHomora](https://homora.alph
 
 ## Smart Contract Structure
 
-### Bank 🏦 ([code](./contracts/Bank.sol))
+### Bank 🏦 ([code](./contracts/5/Bank.sol))
 
 Bank is the smart contract that manages all leveraged yeild farming positions. All interactions to AlphaHomora happen through this smart contract. If you are a rich wizard 🧙‍♂️, you can deposit your BNB/BNB to earn intersts. If you are a poor farmer 👩‍🌾, you can open a new position on Bank by specifying the debt you will take anda Goblin who will work for your position.
 
-### Goblins 👺 ([code](./contracts/Goblin.sol))
+### Goblins 👺 ([code](./contracts/5/Goblin.sol))
 
-### UniswapGoblin 🦄👺 ([code](./contracts/UniswapGoblin.sol))
+### UniswapGoblin 🦄👺 ([code](./contracts/5/UniswapGoblin.sol))
 
-### StrategyAddBNBOnly ⬆️Ξ ([code](./contracts/StrategyAddBNBOnly.sol))
+### StrategyAllBNBOnly ⬆️Ξ ([code](./contracts/5/StrategyAllBNBOnly.sol))
 
-### StrategyLiquidate ⬇️Ξ ([code](./contracts/StrategyLiquidate.sol))
+### StrategyLiquidate ⬇️Ξ ([code](./contracts/5/StrategyLiquidate.sol))
 
 ## License
 
