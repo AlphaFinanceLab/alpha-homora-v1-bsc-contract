@@ -6,6 +6,9 @@ from .utils import *
 from .constant import *
 import eth_abi
 
+# set default gas price
+network.gas_price('10 gwei')
+
 
 def test_token_1(bank, goblin, two_side, fToken):
     alice = accounts[1]
@@ -173,7 +176,7 @@ def main():
         [True, 7000, 8000, 11000]
     ]
 
-    deploy_indices = [0, 1]  # band + link # TODO: update deploy indices
+    deploy_indices = [0, 1, 2, 3]
     deploy_goblins = [new_goblin_list[i] for i in deploy_indices]
     deploy_two_sides = [new_two_sides[i] for i in deploy_indices]
     deploy_fTokens = [fToken_list[i] for i in deploy_indices]
