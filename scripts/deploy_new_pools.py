@@ -125,6 +125,8 @@ def main():
     yfi_goblin = PancakeswapGoblin.at('0x3663AeDeBB70DCF0A64e2600233D6913dD3eCf2B')
     uni_goblin = PancakeswapGoblin.at('0xfdCdF8D07db8C5B33fbF46f41Eced421d9d32bEE')
 
+    print('done loading goblins')
+
     # for new_goblin in new_goblin_list:
     #     assert new_goblin.addStrat() == busd_goblin.addStrat(), 'incorrect add strat'
     #     assert new_goblin.masterChef() == busd_goblin.masterChef(), 'incorrect masterchef'
@@ -149,6 +151,8 @@ def main():
     link_two_side = StrategyAddTwoSidesOptimal.at('0xBD6600922422FD84f02b47B40cD83a4F25D1B12D')
     yfi_two_side = StrategyAddTwoSidesOptimal.at('0x44A819A0d93849bd6587cD6000e91Bf8b302Deaa')
     uni_two_side = StrategyAddTwoSidesOptimal.at('0x397f4605B953134f2Cf5f1176A25a7f5171C2925')
+
+    print('done loading two side')
 
     new_two_sides = [band_two_side, link_two_side, yfi_two_side, uni_two_side]
     fToken_list = [band_address, link_address, yfi_address, uni_address]
@@ -201,6 +205,18 @@ def main():
     add_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
     liq_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
     rem_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
+
+    ##############################################################
+    # open positions
+
+    bank.work(0, band_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [band_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [band_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+    bank.work(0, link_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [link_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [link_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+    bank.work(0, yfi_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [yfi_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [yfi_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+    bank.work(0, uni_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [uni_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [uni_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
 
     ##############################################################
     # test work
