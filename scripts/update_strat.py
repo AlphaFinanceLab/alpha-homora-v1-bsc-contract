@@ -222,13 +222,13 @@ def main():
     # open positions
 
     bank.work(0, front_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [front_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [front_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+        ['address', 'uint256', 'uint256'], [front_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
     bank.work(0, dot_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [dot_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [dot_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+        ['address', 'uint256', 'uint256'], [dot_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
     bank.work(0, xvs_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [xvs_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [xvs_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+        ['address', 'uint256', 'uint256'], [xvs_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
     bank.work(0, inj_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [inj_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [inj_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+        ['address', 'uint256', 'uint256'], [inj_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
 
     ##############################################################
     # test work
