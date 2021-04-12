@@ -118,12 +118,8 @@ def test_token(bank, registry, add_strat, liq_strat, rem_strat, token_name):
 
 
 def main():
-    # deployer = accounts[8]
     deployer = accounts.at('0x4D4DA0D03F6f087697bbf13378a21E8ff6aF1a58', force=True)
-    # deployer = accounts.load('')
-
-    # deploy bank
-    # bank, add_strat, liq_strat, rem_strat, bank_config, goblin_config, oracle = deploy(deployer)
+    # deployer = accounts.load('ghb')
 
     triple_slope = TripleSlopeModel.at('0x9b0432c1800f35fd5235d24c2e223c45cefe0864')
     bank_config = ConfigurableInterestBankConfig.at('0x70df43522d3a7332310b233de763758adca14961')
@@ -177,6 +173,28 @@ def main():
     fTokens = list(map(lambda pool: pool['token'], pools))
     liq_strat.setWhitelistTokens(fTokens, [True] * len(fTokens), {'from': deployer})
     rem_strat.setWhitelistTokens(fTokens, [True] * len(fTokens), {'from': deployer})
+
+    ##############################################################
+    # open positions
+
+    front_goblin = registry['front']['goblin']
+    dot_goblin = registry['dot']['goblin']
+    xvs_goblin = registry['xvs']['goblin']
+    inj_goblin = registry['inj']['goblin']
+
+    front_two_side = registry['front']['two_side']
+    dot_two_side = registry['dot']['two_side']
+    xvs_two_side = registry['xvs']['two_side']
+    inj_two_side = registry['inj']['two_side']
+
+    bank.work(0, front_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [front_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [front_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+    bank.work(0, dot_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [dot_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [dot_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+    bank.work(0, xvs_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [xvs_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [xvs_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
+    bank.work(0, inj_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [inj_two_side.address, eth_abi.encode_abi(
+        ['address', 'uint256', 'uint256'], [inj_address, 0, 0])]), {'from': deployer, 'value': '1 ether'})
 
     #########################################################################
     # test work
