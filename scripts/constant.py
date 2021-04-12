@@ -15,6 +15,9 @@ yfi_address = '0x88f1A5ae2A3BF98AEAF342D26B30a79438c9142e'
 alpha_address = '0xa1faa113cbE53436Df28FF0aEe54275c13B40975'
 ltc_address = '0x4338665CBB7B2485A8855A139b75D5e34AB0DB94'
 front_address = '0x928e55daB735aa8260AF3cEDadA18B5f70C72f1b'
+dot_address = '0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402'
+xvs_address = '0xcF6BB5389c92Bdda8a3747Ddb454cB7a64626C63'
+inj_address = '0xa2B726B1145A4773F68593CF171187d8EBe4d495'
 
 cake_lp_address = '0xA527a61703D82139F8a06Bc30097cC9CAA2df5A6'
 busd_lp_address = '0x1B96B92314C44b159149f7E0303511fB2Fc4774f'
@@ -28,6 +31,9 @@ yfi_lp_address = '0x68Ff2ca47D27db5Ac0b5c46587645835dD51D3C1'
 alpha_lp_address = '0x4e0f3385d932F7179DeE045369286FFa6B03d887'
 ltc_lp_address = '0xBc765Fd113c5bDB2ebc25F711191B56bB8690aec'
 front_lp_address = '0x36b7D2e5C7877392Fb17f9219efaD56F3D794700'
+dot_lp_address = '0xbCD62661A6b1DEd703585d3aF7d7649Ef4dcDB5c'
+xvs_lp_address = '0x41182c32F854dd97bA0e0B1816022e0aCB2fc0bb'
+inj_lp_address = '0x7a34bd64d18e44CfdE3ef4B81b87BAf3EB3315B6'
 
 pools = [
     {
@@ -113,5 +119,26 @@ pools = [
         "lp": front_lp_address,
         "pid": 57,
         "goblinConfig": [True, 5250, 6000, 11000]
+    },
+    {
+        "name": "dot",
+        "token": dot_address,
+        "lp": dot_lp_address,
+        "pid": 5,
+        "goblinConfig": [True, 6250, 7000, 11000]
+    },
+    {
+        "name": "xvs",
+        "token": xvs_address,
+        "lp": xvs_lp_address,
+        "pid": 13,
+        "goblinConfig": [True, 5250, 6000, 11000]
+    },
+    {
+        "name": "inj",
+        "token": inj_address,
+        "lp": inj_lp_address,
+        "pid": 27,
+        "goblinConfig": [True, 6250, 7000, 11000]
     },
 ]
