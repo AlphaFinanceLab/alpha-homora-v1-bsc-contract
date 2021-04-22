@@ -9,7 +9,7 @@ import './uniswap/IUniswapV2Router02.sol';
 import './SafeToken.sol';
 import './Strategy.sol';
 
-contract StrategyAllBNBOnly is Ownable, ReentrancyGuard, Strategy {
+contract StrategyAllBNBOnlyV2 is Ownable, ReentrancyGuard, Strategy {
   using SafeToken for address;
   using SafeMath for uint;
 

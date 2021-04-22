@@ -1,6 +1,6 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapV2Goblin,
-                     StrategyAllBNBOnlyV2, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimalV2, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapV2Pool1Goblin, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
+                     StrategyAllBNBOnlyV2, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimalV2, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapV2Pool139Goblin, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
 from brownie import network
 from .utils import *
 from .constant import *
@@ -104,6 +104,9 @@ def main():
     deployer = accounts.at('0x4D4DA0D03F6f087697bbf13378a21E8ff6aF1a58', force=True)
     # deployer = accounts.load('ghb')
 
+    new_factory = '0x877fe7f4e22e21be397cd9364fafd4af4e15edb6'
+    new_router = '0x2AD2C5314028897AEcfCF37FD923c079BeEb2C56'
+
     triple_slope = TripleSlopeModel.at('0x9b0432c1800f35fd5235d24c2e223c45cefe0864')
     bank_config = ConfigurableInterestBankConfig.at('0x70df43522d3a7332310b233de763758adca14961')
     bank_impl = Bank.at('0x35cfacc93244fc94d26793cd6e68f59976380b3e')
@@ -113,7 +116,11 @@ def main():
     rem_strat = StrategyWithdrawMinimizeTrading.at('')  # TODO: wait for deploy
     goblin_config = PancakeswapGoblinConfig.at('0x8703f72dbdcd169a9c702e7044603ebbfb11425c')
 
-    cake_goblin = PancakeswapV2Pool1Goblin.at('')
+    assert add_strat.router() == new_router, 'add: incorrect router'
+    assert liq_strat.router() == new_router, 'liq: incorrect router'
+    assert rem_strat.router() == new_router, 'rem: incorrect router'
+
+    cake_goblin = PancakeswapV2Pool139Goblin.at('')
     busd_goblin = PancakeswapV2Goblin.at('')
     btc_goblin = PancakeswapV2Goblin.at('')
     eth_goblin = PancakeswapV2Goblin.at('')

@@ -9,7 +9,7 @@ import './uniswap/IUniswapV2Router02.sol';
 import './SafeToken.sol';
 import './Strategy.sol';
 
-contract StrategyAddTwoSidesOptimal is Ownable, ReentrancyGuard, Strategy {
+contract StrategyAddTwoSidesOptimalV2 is Ownable, ReentrancyGuard, Strategy {
   using SafeToken for address;
   using SafeMath for uint;
 
