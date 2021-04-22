@@ -323,9 +323,25 @@ def main():
     ##############################################################
     # test work
 
+    # mint_tokens(wbnb_address, deployer)
+    # factory = '0x877fe7f4e22e21be397cd9364fafd4af4e15edb6'
+
     # for i in range(len(deploy_goblins)):
     #     goblin = deploy_goblins[i]
     #     add_strat_2 = deploy_two_sides[i]
     #     fToken = deploy_fTokens[i]
+
+    #     mint_tokens(fToken, deployer)
+    #     lp = interface.IAny(factory).getPair(wbnb_address, fToken)
+    #     r0, r1, _ = interface.IAny(lp).getReserves()
+
+    #     if interface.IAny(lp).token0() == wbnb_address:
+    #         interface.IAny(wbnb_address).transfer(lp, 10000 * r0, {'from': deployer})
+    #         interface.IAny(fToken).transfer(lp, 10000 * r1, {'from': deployer})
+    #     else:
+    #         interface.IAny(fToken).transfer(lp, 10000 * r0, {'from': deployer})
+    #         interface.IAny(wbnb_address).transfer(lp, 10000 * r1, {'from': deployer})
+
+    #     interface.IAny(lp).sync({'from': deployer})
 
     #     test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_2)
