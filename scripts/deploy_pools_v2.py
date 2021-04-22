@@ -294,34 +294,31 @@ def main():
     ##############################################################
     # open positions
 
-    bank.work(0, cake_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [cake_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [cake_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, busd_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [busd_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [busd_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, btc_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [btc_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [btcb_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, eth_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [eth_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [eth_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, usdt_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [usdt_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [usdt_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, alpha_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [alpha_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [alpha_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, band_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [band_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [band_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, link_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [link_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [link_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, yfi_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [yfi_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [yfi_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, uni_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [uni_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [uni_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, front_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [front_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [front_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, dot_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [dot_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [dot_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, xvs_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [xvs_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [xvs_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
-    bank.work(0, inj_goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [inj_two_side.address, eth_abi.encode_abi(
-        ['address', 'uint256', 'uint256'], [inj_address, 0, 0])]), {'from': deployer, 'value': '2 ether'})
+    old_factory = interface.IAny(router_address).factory()
+
+    for i in range(len(new_goblin_list)):
+        goblin = new_goblin_list[i]
+        two_side = new_two_sides[i]
+        fToken_address = fToken_list[i]
+
+        # swap 1 BNB to fToken using the old router
+        lp = interface.IAny(old_factory).getPair(wbnb_address, fToken_address)
+        res0, res1, _ = interface.IAny(lp).getReserves()
+        if interface.IAny(lp).token0() == wbnb_address:
+            target_amt = 2 * 10**18 * res1 / res0
+        else:
+            target_amt = 2 * 10**18 * res0 / res1
+
+        fToken_pre_bal = interface.IERC20(fToken_address).balanceOf(deployer)
+        interface.IAny(router_address).swapExactETHForTokens(int(target_amt * 0.98), [wbnb_address, fToken_address], deployer, chain.time() + 20 * 60, {'from': deployer, 'value': '2 ether'})
+        fToken_pos_bal = interface.IERC20(fToken_address).balanceOf(deployer)
+
+        fToken_amount = fToken_pos_bal - fToken_pre_bal
+        interface.IAny(fToken_address).approve(two_side, fToken_amount, {'from': deployer})
+
+        # print(fToken_amount/1e18)
+        bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [two_side.address, eth_abi.encode_abi(
+            ['address', 'uint256', 'uint256'], [fToken_address, fToken_amount, 0])]), {'from': deployer, 'value': '1 ether'})
 
     ##############################################################
     # test work
