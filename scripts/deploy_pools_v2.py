@@ -273,12 +273,14 @@ def main():
         goblin = deploy_goblins[i]
         add_strat_2 = deploy_two_sides[i]
 
+        goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': deployer})
         if gobin == cake_goblin:
+            goblin.setCriticalStrategies(add_strat_2, liq_strat, {'from': deployer})
             goblin.setStrategyOk([add_strat], False, {'from': deployer})
 
-        goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': deployer})
+    # don't add cake to add_strat's whitelist
+    add_strat.setWhitelistTokens(deploy_fTokens[1:], [True] * len(deploy_fTokens), {'from': deployer})
 
-    add_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
     liq_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
     rem_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
 
