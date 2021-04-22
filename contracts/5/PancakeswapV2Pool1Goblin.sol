@@ -150,9 +150,9 @@ contract PancakeswapV2Pool1Goblin is Ownable, ReentrancyGuard, Goblin {
   ) public pure returns (uint) {
     if (aIn == 0) return 0;
     require(rIn > 0 && rOut > 0, 'bad reserve values');
-    uint aInWithFee = aIn.mul(998);
+    uint aInWithFee = aIn.mul(9975);
     uint numerator = aInWithFee.mul(rOut);
-    uint denominator = rIn.mul(1000).add(aInWithFee);
+    uint denominator = rIn.mul(10000).add(aInWithFee);
     return numerator / denominator;
   }
 

@@ -77,10 +77,10 @@ contract StrategyAddTwoSidesOptimal is Ownable, ReentrancyGuard, Strategy {
   ) internal pure returns (uint) {
     require(amtA.mul(resB) >= amtB.mul(resA), 'Reversed');
 
-    uint a = 998;
-    uint b = uint(1998).mul(resA);
+    uint a = 9975;
+    uint b = uint(19975).mul(resA);
     uint _c = (amtA.mul(resB)).sub(amtB.mul(resA));
-    uint c = _c.mul(1000).div(amtB.add(resB)).mul(resA);
+    uint c = _c.mul(10000).div(amtB.add(resB)).mul(resA);
 
     uint d = a.mul(c).mul(4);
     uint e = Math.sqrt(b.mul(b).add(d));
