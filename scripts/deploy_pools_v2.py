@@ -128,8 +128,6 @@ def main():
     xvs_goblin = PancakeswapV2Goblin.at('')
     inj_goblin = PancakeswapV2Goblin.at('')
 
-    print('done loading goblins')
-
     new_goblin_list = [
         cake_goblin,
         busd_goblin,
@@ -146,6 +144,42 @@ def main():
         xvs_goblin,
         inj_goblin
     ]
+
+    new_two_sides = [
+        cake_two_side,
+        busd_two_side,
+        btc_two_side,
+        eth_two_side,
+        usdt_two_side,
+        alpha_two_side,
+        uni_two_side,
+        link_two_side,
+        band_two_side,
+        yfi_two_side,
+        front_two_side,
+        dot_two_side,
+        xvs_two_side,
+        inj_two_side
+    ]
+
+    fToken_list = [
+        cake_address,
+        busd_address,
+        btcb_address,
+        eth_address,
+        usdt_address,
+        alpha_address,
+        uni_address,
+        link_address,
+        band_address,
+        yfi_address,
+        front_address,
+        dot_address,
+        xvs_address,
+        inj_address
+    ]
+
+    print('done loading goblins')
 
     for new_goblin in new_goblin_list:
         if new_goblin != cake_goblin:
@@ -189,39 +223,6 @@ def main():
 
     print('done loading two side')
 
-    new_two_sides = [
-        cake_two_side,
-        busd_two_side,
-        btc_two_side,
-        eth_two_side,
-        usdt_two_side,
-        alpha_two_side,
-        uni_two_side,
-        link_two_side,
-        band_two_side,
-        yfi_two_side,
-        front_two_side,
-        dot_two_side,
-        xvs_two_side,
-        inj_two_side
-    ]
-    fToken_list = [
-        cake_address,
-        busd_address,
-        btcb_address,
-        eth_address,
-        usdt_address,
-        alpha_address,
-        uni_address,
-        link_address,
-        band_address,
-        yfi_address,
-        front_address,
-        dot_address,
-        xvs_address,
-        inj_address
-    ]
-
     for i in range(len(fToken_list)):
         new_goblin = new_goblin_list[i]
         new_two_side = new_two_sides[i]
@@ -234,55 +235,6 @@ def main():
 
     ##############################################################
     # deploy new pools
-
-    new_goblin_list = [
-        cake_goblin,
-        busd_goblin,
-        btc_goblin,
-        eth_goblin,
-        usdt_goblin,
-        alpha_goblin,
-        uni_goblin,
-        link_goblin,
-        band_goblin,
-        yfi_goblin,
-        front_goblin,
-        dot_goblin,
-        xvs_goblin,
-        inj_goblin
-    ]
-    new_two_sides = [
-        cake_two_side,
-        busd_two_side,
-        btc_two_side,
-        eth_two_side,
-        usdt_two_side,
-        alpha_two_side,
-        uni_two_side,
-        link_two_side,
-        band_two_side,
-        yfi_two_side,
-        front_two_side,
-        dot_two_side,
-        xvs_two_side,
-        inj_two_side
-    ]
-    fToken_list = [
-        cake_address,
-        busd_address,
-        btcb_address,
-        eth_address,
-        usdt_address,
-        alpha_address,
-        uni_address,
-        link_address,
-        band_address,
-        yfi_address,
-        front_address,
-        dot_address,
-        xvs_address,
-        inj_address
-    ]
 
     configs = [
         [True, 6250, 7000, 11000],
