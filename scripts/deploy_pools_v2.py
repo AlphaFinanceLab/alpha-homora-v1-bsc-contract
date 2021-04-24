@@ -7,8 +7,7 @@ from .constant import *
 import eth_abi
 
 # set default gas price
-# network.gas_price('5 gwei')
-network.gas_price('0 gwei')  # TODO
+network.gas_price('5 gwei')
 
 
 def test_token_1(bank, goblin, two_side, fToken):
@@ -38,10 +37,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
     bob = accounts[2]
     charlie = accounts[3]
 
-    router = interface.IAny('0x2AD2C5314028897AEcfCF37FD923c079BeEb2C56')
-    factory = interface.IAny(router.factory())
-    lp = interface.IAny(factory.getPair(fToken, wbnb_address))
-
     print('goblin', goblin)
     print('fToken', fToken)
     print('add_strat_2', add_strat_2)
@@ -50,8 +45,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
     bank.deposit({'from': charlie, 'value': '1 ether'})
 
     prevBNBBal = alice.balance()
-
-    print(lp.getReserves())
 
     bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
                                                                               eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
@@ -66,8 +59,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     prevBNBBal = alice.balance()
 
-    print(lp.getReserves())
-
     bank.work(pos_id, goblin, 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
               liq_strat.address, eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice})
 
@@ -75,8 +66,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
     print('alice pos', bank.positionInfo(pos_id))
-
-    print(lp.getReserves())
 
     if fToken == cake_address:
         bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
@@ -87,8 +76,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     pos_id = bank.nextPositionID() - 1
 
-    print(lp.getReserves())
-
     bank.work(pos_id, goblin, 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
               rem_strat.address, eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice})
 
@@ -98,7 +85,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
     goblin.reinvest({'from': alice})
 
     print('liquidating')
-    print(lp.getReserves())
 
     bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
                                                                               eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
@@ -106,8 +92,6 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
     pos_id = bank.nextPositionID() - 1
 
     pre_bank_bal = bank.balance()
-
-    print(lp.getReserves())
 
     goblin.liquidate(pos_id, {'from': bank, 'gas_price': 0})
 
@@ -118,7 +102,7 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
 
 def main():
-    publish_status = True  # TODO: change to True
+    publish_status = False  # TODO: change to True
 
     deployer = accounts.at('0x4D4DA0D03F6f087697bbf13378a21E8ff6aF1a58', force=True)
     # deployer = accounts.load('ghb')
