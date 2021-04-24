@@ -1,13 +1,14 @@
 from brownie import accounts, interface, Contract
 from brownie import (Bank, SimpleBankConfig, SimplePriceOracle, PancakeswapV2Goblin,
-                     StrategyAllBNBOnlyV2, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimalV2, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapV2Pool139Goblin, ProxyAdminImpl, TransparentUpgradeableProxyImpl)
+                     StrategyAllBNBOnlyV2, StrategyLiquidate, StrategyWithdrawMinimizeTrading, StrategyAddTwoSidesOptimalV2, PancakeswapGoblinConfig, TripleSlopeModel, ConfigurableInterestBankConfig, PancakeswapV2Pool251Goblin)
 from brownie import network
 from .utils import *
 from .constant import *
 import eth_abi
 
 # set default gas price
-network.gas_price('5 gwei')
+# network.gas_price('5 gwei')
+network.gas_price('0 gwei')  # TODO
 
 
 def test_token_1(bank, goblin, two_side, fToken):
@@ -37,6 +38,10 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
     bob = accounts[2]
     charlie = accounts[3]
 
+    router = interface.IAny('0x2AD2C5314028897AEcfCF37FD923c079BeEb2C56')
+    factory = interface.IAny(router.factory())
+    lp = interface.IAny(factory.getPair(fToken, wbnb_address))
+
     print('goblin', goblin)
     print('fToken', fToken)
     print('add_strat_2', add_strat_2)
@@ -46,9 +51,10 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     prevBNBBal = alice.balance()
 
+    print(lp.getReserves())
+
     bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
                                                                               eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
-
     curBNBBal = alice.balance()
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
@@ -60,6 +66,8 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     prevBNBBal = alice.balance()
 
+    print(lp.getReserves())
+
     bank.work(pos_id, goblin, 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
               liq_strat.address, eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice})
 
@@ -67,6 +75,8 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     print('∆ bnb alice', curBNBBal - prevBNBBal)
     print('alice pos', bank.positionInfo(pos_id))
+
+    print(lp.getReserves())
 
     if fToken == cake_address:
         bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
@@ -77,19 +87,27 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
     pos_id = bank.nextPositionID() - 1
 
+    print(lp.getReserves())
+
     bank.work(pos_id, goblin, 0, 2**256-1, eth_abi.encode_abi(['address', 'bytes'], [
               rem_strat.address, eth_abi.encode_abi(['address', 'uint256'], [fToken, 0])]), {'from': alice})
 
     print('reinvesting')
+    print(lp.getReserves())
+
     goblin.reinvest({'from': alice})
 
     print('liquidating')
+    print(lp.getReserves())
+
     bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [add_strat_2.address,
                                                                               eth_abi.encode_abi(['address', 'uint256', 'uint256'], [fToken, 0, 0])]), {'from': alice, 'value': '1 ether'})
 
     pos_id = bank.nextPositionID() - 1
 
     pre_bank_bal = bank.balance()
+
+    print(lp.getReserves())
 
     goblin.liquidate(pos_id, {'from': bank, 'gas_price': 0})
 
@@ -100,40 +118,43 @@ def test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_
 
 
 def main():
+    publish_status = True  # TODO: change to True
 
     deployer = accounts.at('0x4D4DA0D03F6f087697bbf13378a21E8ff6aF1a58', force=True)
     # deployer = accounts.load('ghb')
 
-    new_factory = '0x877fe7f4e22e21be397cd9364fafd4af4e15edb6'
-    new_router = '0x2AD2C5314028897AEcfCF37FD923c079BeEb2C56'
+    new_factory = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73'
+    new_router = '0x10ED43C718714eb63d5aA57B78B54704E256024E'
 
     triple_slope = TripleSlopeModel.at('0x9b0432c1800f35fd5235d24c2e223c45cefe0864')
     bank_config = ConfigurableInterestBankConfig.at('0x70df43522d3a7332310b233de763758adca14961')
     bank_impl = Bank.at('0x35cfacc93244fc94d26793cd6e68f59976380b3e')
     bank = Bank.at('0x3bb5f6285c312fc7e1877244103036ebbeda193d')
-    add_strat = StrategyAllBNBOnlyV2.at('')  # TODO: wait for deploy
-    liq_strat = StrategyLiquidate.at('')  # TODO: wait for deploy
-    rem_strat = StrategyWithdrawMinimizeTrading.at('')  # TODO: wait for deploy
     goblin_config = PancakeswapGoblinConfig.at('0x8703f72dbdcd169a9c702e7044603ebbfb11425c')
+
+    # deploy new strats
+    add_strat = StrategyAllBNBOnlyV2.deploy(new_router, {'from': deployer}, publish_source=publish_status)
+    liq_strat = StrategyLiquidate.deploy(new_router, {'from': deployer}, publish_source=publish_status)
+    rem_strat = StrategyWithdrawMinimizeTrading.deploy(new_router, {'from': deployer}, publish_source=publish_status)
 
     assert add_strat.router() == new_router, 'add: incorrect router'
     assert liq_strat.router() == new_router, 'liq: incorrect router'
     assert rem_strat.router() == new_router, 'rem: incorrect router'
 
-    cake_goblin = PancakeswapV2Pool139Goblin.at('')
-    busd_goblin = PancakeswapV2Goblin.at('')
-    btc_goblin = PancakeswapV2Goblin.at('')
-    eth_goblin = PancakeswapV2Goblin.at('')
-    usdt_goblin = PancakeswapV2Goblin.at('')
-    alpha_goblin = PancakeswapV2Goblin.at('')
-    uni_goblin = PancakeswapV2Goblin.at('')
-    link_goblin = PancakeswapV2Goblin.at('')
-    band_goblin = PancakeswapV2Goblin.at('')
-    yfi_goblin = PancakeswapV2Goblin.at('')
-    front_goblin = PancakeswapV2Goblin.at('')
-    dot_goblin = PancakeswapV2Goblin.at('')
-    xvs_goblin = PancakeswapV2Goblin.at('')
-    inj_goblin = PancakeswapV2Goblin.at('')
+    cake_goblin = PancakeswapV2Pool251Goblin.deploy(bank, chef_address, new_router, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    busd_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 252, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    btc_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 262, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    eth_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 261, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    usdt_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 264, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    alpha_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 263, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    uni_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 268, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    link_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 257, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    band_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 254, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    yfi_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 267, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    front_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 287, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    dot_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 255, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    xvs_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 260, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
+    inj_goblin = PancakeswapV2Goblin.deploy(bank, chef_address, new_router, 270, add_strat, liq_strat, 30, {'from': deployer}, publish_source=publish_status)
 
     new_goblin_list = [
         cake_goblin,
@@ -151,6 +172,50 @@ def main():
         xvs_goblin,
         inj_goblin
     ]
+
+    print('done loading goblins')
+
+    for new_goblin in new_goblin_list:
+        if new_goblin != cake_goblin:
+            assert new_goblin.addStrat() == busd_goblin.addStrat(), 'incorrect add strat'
+        assert new_goblin.masterChef() == busd_goblin.masterChef(), 'incorrect masterchef'
+        assert new_goblin.router() == busd_goblin.router(), 'incorrect router'
+        assert new_goblin.liqStrat() == busd_goblin.liqStrat(), 'incorrect liqStrat'
+        assert new_goblin.reinvestBountyBps() == 30, 'incorrect bounty bps'
+
+    assert cake_goblin.pid() == 251, 'incorrect cake pid'
+    assert busd_goblin.pid() == 252, 'incorrect busd pid'
+    assert btc_goblin.pid() == 262, 'incorrect btc pid'
+    assert eth_goblin.pid() == 261, 'incorrect eth pid'
+    assert usdt_goblin.pid() == 264, 'incorrect usdt pid'
+    assert alpha_goblin.pid() == 263, 'incorrect alpha pid'
+    assert uni_goblin.pid() == 268, 'incorrect uni pid'
+    assert link_goblin.pid() == 257, 'incorrect link pid'
+    assert band_goblin.pid() == 254, 'incorrect band pid'
+    assert yfi_goblin.pid() == 267, 'incorrect yfi pid'
+    assert front_goblin.pid() == 287, 'incorrect front pid'
+    assert dot_goblin.pid() == 255, 'incorrect dot pid'
+    assert xvs_goblin.pid() == 260, 'incorrect xvs pid'
+    assert inj_goblin.pid() == 270, 'incorrect uni pid'
+
+    print('done asserting goblins')
+
+    cake_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, cake_goblin, cake_address, {'from': deployer}, publish_source=publish_status)
+    busd_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, busd_goblin, busd_address, {'from': deployer}, publish_source=publish_status)
+    btc_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, btc_goblin, btcb_address, {'from': deployer}, publish_source=publish_status)
+    eth_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, eth_goblin, eth_address, {'from': deployer}, publish_source=publish_status)
+    usdt_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, usdt_goblin, usdt_address, {'from': deployer}, publish_source=publish_status)
+    alpha_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, alpha_goblin, alpha_address, {'from': deployer}, publish_source=publish_status)
+    uni_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, uni_goblin, uni_address, {'from': deployer}, publish_source=publish_status)
+    link_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, link_goblin, link_address, {'from': deployer}, publish_source=publish_status)
+    band_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, band_goblin, band_address, {'from': deployer}, publish_source=publish_status)
+    yfi_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, yfi_goblin, yfi_address, {'from': deployer}, publish_source=publish_status)
+    front_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, front_goblin, front_address, {'from': deployer}, publish_source=publish_status)
+    dot_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, dot_goblin, dot_address, {'from': deployer}, publish_source=publish_status)
+    xvs_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, xvs_goblin, xvs_address, {'from': deployer}, publish_source=publish_status)
+    inj_two_side = StrategyAddTwoSidesOptimalV2.deploy(new_router, inj_goblin, inj_address, {'from': deployer}, publish_source=publish_status)
+
+    print('done loading two side')
 
     new_two_sides = [
         cake_two_side,
@@ -186,50 +251,6 @@ def main():
         inj_address
     ]
 
-    print('done loading goblins')
-
-    for new_goblin in new_goblin_list:
-        if new_goblin != cake_goblin:
-            assert new_goblin.addStrat() == busd_goblin.addStrat(), 'incorrect add strat'
-        assert new_goblin.masterChef() == busd_goblin.masterChef(), 'incorrect masterchef'
-        assert new_goblin.router() == busd_goblin.router(), 'incorrect router'
-        assert new_goblin.liqStrat() == busd_goblin.liqStrat(), 'incorrect liqStrat'
-        assert new_goblin.reinvestBountyBps() == 30, 'incorrect bounty bps'
-
-    assert cake_goblin.pid() == 139, 'incorrect cake pid'
-    assert busd_goblin.pid() == 140, 'incorrect busd pid'
-    assert btc_goblin.pid() == 150, 'incorrect btc pid'
-    assert eth_goblin.pid() == 149, 'incorrect eth pid'
-    assert usdt_goblin.pid() == 152, 'incorrect usdt pid'
-    assert alpha_goblin.pid() == 151, 'incorrect alpha pid'
-    assert uni_goblin.pid() == 157, 'incorrect uni pid'
-    assert link_goblin.pid() == 145, 'incorrect link pid'
-    assert band_goblin.pid() == 142, 'incorrect band pid'
-    assert yfi_goblin.pid() == 156, 'incorrect yfi pid'
-    assert front_goblin.pid() == 176, 'incorrect front pid'
-    assert dot_goblin.pid() == 143, 'incorrect dot pid'
-    assert xvs_goblin.pid() == 148, 'incorrect xvs pid'
-    assert inj_goblin.pid() == 159, 'incorrect uni pid'
-
-    print('done asserting goblins')
-
-    cake_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    busd_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    btc_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    eth_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    usdt_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    alpha_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    uni_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    link_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    band_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    yfi_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    front_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    dot_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    xvs_two_side = StrategyAddTwoSidesOptimalV2.at('')
-    inj_two_side = StrategyAddTwoSidesOptimalV2.at('')
-
-    print('done loading two side')
-
     for i in range(len(fToken_list)):
         new_goblin = new_goblin_list[i]
         new_two_side = new_two_sides[i]
@@ -237,7 +258,10 @@ def main():
         assert new_two_side.router() == cake_two_side.router(), 'incorrect router'
         assert new_two_side.goblin(
         ) == new_goblin, f'incorrect goblin {new_two_side.goblin()}, {new_goblin}'
-        assert new_two_side.fToken_() == new_goblin.fToken(), 'incorrect fToken'
+        if new_goblin == cake_goblin:
+            assert new_two_side.fToken_() == cake_address, 'incorrect fToken (cake)'
+        else:
+            assert new_two_side.fToken_() == new_goblin.fToken(), 'incorrect fToken'
         assert new_two_side.fToken_() == fToken_list[i], 'incorrect fToken'
 
     ##############################################################
@@ -281,12 +305,12 @@ def main():
         add_strat_2 = deploy_two_sides[i]
 
         goblin.setStrategyOk([add_strat_2, rem_strat], True, {'from': deployer})
-        if gobin == cake_goblin:
+        if goblin == cake_goblin:
             goblin.setCriticalStrategies(add_strat_2, liq_strat, {'from': deployer})
             goblin.setStrategyOk([add_strat], False, {'from': deployer})
 
     # don't add cake to add_strat's whitelist
-    add_strat.setWhitelistTokens(deploy_fTokens[1:], [True] * len(deploy_fTokens), {'from': deployer})
+    add_strat.setWhitelistTokens(deploy_fTokens[1:], [True] * len(deploy_fTokens[1:]), {'from': deployer})
 
     liq_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
     rem_strat.setWhitelistTokens(deploy_fTokens, [True] * len(deploy_fTokens), {'from': deployer})
@@ -294,54 +318,25 @@ def main():
     ##############################################################
     # open positions
 
-    old_factory = interface.IAny(router_address).factory()
+    old_factory = interface.IAny(old_router_address).factory()
 
     for i in range(len(new_goblin_list)):
         goblin = new_goblin_list[i]
         two_side = new_two_sides[i]
         fToken_address = fToken_list[i]
 
-        # swap 1 BNB to fToken using the old router
-        lp = interface.IAny(old_factory).getPair(wbnb_address, fToken_address)
-        res0, res1, _ = interface.IAny(lp).getReserves()
-        if interface.IAny(lp).token0() == wbnb_address:
-            target_amt = 2 * 10**18 * res1 / res0
-        else:
-            target_amt = 2 * 10**18 * res0 / res1
-
-        fToken_pre_bal = interface.IERC20(fToken_address).balanceOf(deployer)
-        interface.IAny(router_address).swapExactETHForTokens(int(target_amt * 0.98), [wbnb_address, fToken_address], deployer, chain.time() + 20 * 60, {'from': deployer, 'value': '2 ether'})
-        fToken_pos_bal = interface.IERC20(fToken_address).balanceOf(deployer)
-
-        fToken_amount = fToken_pos_bal - fToken_pre_bal
-        interface.IAny(fToken_address).approve(two_side, fToken_amount, {'from': deployer})
-
-        # print(fToken_amount/1e18)
         bank.work(0, goblin, 10**18, 0, eth_abi.encode_abi(['address', 'bytes'], [two_side.address, eth_abi.encode_abi(
-            ['address', 'uint256', 'uint256'], [fToken_address, fToken_amount, 0])]), {'from': deployer, 'value': '1 ether'})
+            ['address', 'uint256', 'uint256'], [fToken_address, 0, 0])]), {'from': deployer, 'value': '1.01 ether'})
 
     ##############################################################
     # test work
 
-    # mint_tokens(wbnb_address, deployer)
-    # factory = '0x877fe7f4e22e21be397cd9364fafd4af4e15edb6'
-
     # for i in range(len(deploy_goblins)):
+
     #     goblin = deploy_goblins[i]
     #     add_strat_2 = deploy_two_sides[i]
     #     fToken = deploy_fTokens[i]
 
-    #     mint_tokens(fToken, deployer)
-    #     lp = interface.IAny(factory).getPair(wbnb_address, fToken)
-    #     r0, r1, _ = interface.IAny(lp).getReserves()
-
-    #     if interface.IAny(lp).token0() == wbnb_address:
-    #         interface.IAny(wbnb_address).transfer(lp, 10000 * r0, {'from': deployer})
-    #         interface.IAny(fToken).transfer(lp, 10000 * r1, {'from': deployer})
-    #     else:
-    #         interface.IAny(fToken).transfer(lp, 10000 * r0, {'from': deployer})
-    #         interface.IAny(wbnb_address).transfer(lp, 10000 * r1, {'from': deployer})
-
-    #     interface.IAny(lp).sync({'from': deployer})
+    #     print(f'testing pool {fToken}')
 
     #     test_token(bank, goblin, fToken, add_strat, liq_strat, rem_strat, add_strat_2)

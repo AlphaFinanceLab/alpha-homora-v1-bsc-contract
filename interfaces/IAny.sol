@@ -195,4 +195,6 @@ interface IAny {
     address,
     uint
   ) external returns (uint[] memory);
+
+  function getOwner() external view returns (address);
 }

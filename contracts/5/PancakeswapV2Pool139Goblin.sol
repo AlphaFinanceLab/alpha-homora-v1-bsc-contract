@@ -14,7 +14,7 @@ import './interfaces/IMasterChef.sol';
 
 // PancakeswapPool1Goblin is specific for CAKE-BNB pool in Pancakeswap.
 // In this case, fToken = CAKE and pid = 1.
-contract PancakeswapV2Pool139Goblin is Ownable, ReentrancyGuard, Goblin {
+contract PancakeswapV2Pool251Goblin is Ownable, ReentrancyGuard, Goblin {
   /// @notice Libraries
   using SafeToken for address;
   using SafeMath for uint;
@@ -33,7 +33,7 @@ contract PancakeswapV2Pool139Goblin is Ownable, ReentrancyGuard, Goblin {
   address public wbnb;
   address public cake;
   address public operator;
-  uint public constant pid = 139;
+  uint public constant pid = 251;
 
   /// @notice Mutable state variables
   mapping(uint => uint) public shares;
