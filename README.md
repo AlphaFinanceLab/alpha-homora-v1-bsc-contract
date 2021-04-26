@@ -18,6 +18,8 @@ Bank is the smart contract that manages all leveraged yeild farming positions. A
 
 ### StrategyLiquidate ⬇️Ξ ([code](./contracts/5/StrategyLiquidate.sol))
 
+### Bug Bounty Program: https://immunefi.com/bounty/alphafinance/
+
 ## License
 
 [MIT License](https://opensource.org/licenses/MIT)
