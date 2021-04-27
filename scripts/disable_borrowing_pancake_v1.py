@@ -45,7 +45,7 @@ def main():
         config = (False, r1, r2, r3)
         configs.append(config)
 
-    assert len(goblin_v1_list) == len(config), 'len not equal'
+    assert len(goblin_v1_list) == len(configs), 'len not equal'
     goblin_config.setConfigs(goblin_v1_list, configs, {'from': deployer})
 
     for goblin in goblin_v1_list:
