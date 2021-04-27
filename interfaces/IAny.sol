@@ -170,4 +170,6 @@ interface IAny {
   function reinvest() external;
 
   function nextPositionID() external view returns (uint);
+
+  function pid() external view returns (uint);
 }
