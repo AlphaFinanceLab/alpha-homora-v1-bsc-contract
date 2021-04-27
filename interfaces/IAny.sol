@@ -170,4 +170,31 @@ interface IAny {
   function reinvest() external;
 
   function nextPositionID() external view returns (uint);
+
+  function poolInfo(uint)
+    external
+    view
+    returns (
+      address,
+      uint,
+      uint,
+      uint
+    );
+
+  function add(
+    uint,
+    address,
+    bool
+  ) external;
+
+  function sync() external;
+
+  function swapExactETHForTokens(
+    uint,
+    address[] calldata,
+    address,
+    uint
+  ) external returns (uint[] memory);
+
+  function getOwner() external view returns (address);
 }
