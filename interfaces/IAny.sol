@@ -1,4 +1,5 @@
 pragma solidity 0.5.16;
+pragma experimental ABIEncoderV2;
 
 interface IAny {
   function name() external view returns (string memory);
@@ -172,4 +173,25 @@ interface IAny {
   function nextPositionID() external view returns (uint);
 
   function pid() external view returns (uint);
+
+  function get_n_coins(address) external view returns (uint, uint);
+
+  function get_coins(address) external view returns (address[8] memory);
+
+  function balances(uint) external view returns (uint);
+
+  function oracle() external view returns (address);
+
+  function getPrice(address, address) external view returns (uint);
+
+  struct Config {
+    bool acceptDebt;
+    uint64 workFactor;
+    uint64 killFactor;
+    uint64 maxPriceDiff;
+  }
+
+  function setConfigs(address[] calldata, Config[] calldata) external;
+
+  function fToken() external view returns (address);
 }
