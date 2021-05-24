@@ -34,6 +34,10 @@ def main():
         goblin = interface.IAny(goblin)
         accept_debt, work_factor, kill_factor, stable_factor = values
 
+        # skip if not accept debt
+        if not accept_debt:
+            continue
+
         if goblin.address.lower() == '0x3c2BBB353B48D54B619dB8Ac6AA642627Fb800E3'.lower():
             # sushi/eth goblin
             f_token = SUSHI
@@ -67,7 +71,7 @@ def main():
         new_config = [accept_debt, work_factor, kill_factor, 11000]  # set stability factor to 1.1x
         print('new values:', new_config)
 
-        goblin_list.append(goblin)
+        goblin_list.append(goblin.address)
         config_list.append(new_config)
 
     print('goblin list')
