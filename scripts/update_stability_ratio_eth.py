@@ -70,4 +70,10 @@ def main():
         goblin_list.append(goblin)
         config_list.append(new_config)
 
+    print('goblin list')
+    print(goblin_list)
+
+    print('config_list')
+    print(config_list)
+
     goblin_config.setConfigs(goblin_list, config_list, {'from': deployer})
