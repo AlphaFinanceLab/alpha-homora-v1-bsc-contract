@@ -68,7 +68,7 @@ def main():
             continue
 
         print('previous config:', values)
-        new_config = [accept_debt, work_factor, kill_factor, 11000]  # set stability factor to 1.1x
+        new_config = [accept_debt, work_factor, kill_factor, 10500]  # set stability factor to 1.05x
         print('new values:', new_config)
 
         goblin_list.append(goblin.address)
