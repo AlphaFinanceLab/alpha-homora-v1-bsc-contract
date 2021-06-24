@@ -40,7 +40,7 @@ def main():
         '0x7E52d9DbAF0366aAeC36175d551b21762336eCdb': '0x6ab62fc9a84850f2ff005704da7c32f3e5630dce',
     }
 
-    goblins = {x:PancakeswapGoblin.at(x) for x in goblin_v2_list}
+    goblins = {x: PancakeswapGoblin.at(x) for x in goblin_v2_list}
 
     for goblin_addr in goblin_v2_list:
         if goblin_addr in all_bnb_strat_addr:
@@ -52,7 +52,6 @@ def main():
                 f'add-two-side-opt strategy has already been disabled in {goblin_addr}'
             )
 
-
     print('disable allBNBOnly and addTwoSidesOptimal strategy')
     for goblin_addr, goblin in goblins.items():
         strategies = []
@@ -62,76 +61,73 @@ def main():
             strategies.append(add_two_side_opt_strat_addr[goblin_addr])
         goblin = PancakeswapGoblin.at(goblin_addr)
         goblin.setStrategyOk(strategies, False, {'from': deployer})
-    
+
     print("Done!!!")
     print("End of deploy process!!!")
 
-    ###########################################################
-    # test banks with pancakeswap goblin
-    print('==========================================')
-    print('start testing')
+    # ###########################################################
+    # # test banks with pancakeswap goblin
+    # print('==========================================')
+    # print('start testing')
 
+    # alice = accounts[0]
+    # print('execute allbnb strategies; expect all error')
+    # bank = Bank.at('0x3bB5f6285c312fc7E1877244103036ebBEda193d')
+    # tokens_for_goblin = {
+    #     '0x7E52d9DbAF0366aAeC36175d551b21762336eCdb': BYFI,
+    # }
+    # for goblin_addr in goblin_v2_list:
+    #     print('check', goblin_addr)
+    #     try:
+    #         bank.work(
+    #             0,
+    #             goblin_addr,
+    #             0,
+    #             0,
+    #             eth_abi.encode_abi(
+    #                 ['address', 'bytes'],
+    #                 [
+    #                     all_bnb_strat_addr[goblin_addr],
+    #                     eth_abi.encode_abi(['address', 'uint'], [tokens_for_goblin[goblin_addr], 0])
+    #                 ]
+    #             ),
+    #             {'from': alice, 'value': '1 ether'}
+    #         )
+    #         assert False, 'the above command should be reverted'
+    #     except Exception as err:
+    #         print('got error as expect!!!')
+    #         assert "unapproved work strategy" in str(err), (
+    #             f'incorrect msg error; got {err}'
+    #         )
 
-    alice = accounts[0]
-    print('execute allbnb strategies; expect all error')
-    bank = Bank.at('0x3bB5f6285c312fc7E1877244103036ebBEda193d')
-    tokens_for_goblin = {
-        '0x7E52d9DbAF0366aAeC36175d551b21762336eCdb': BYFI,
-    }
-    for goblin_addr in goblin_v2_list:
-        print('check', goblin_addr)
-        try:
-            bank.work(
-                0,
-                goblin_addr,
-                0,
-                0,
-                eth_abi.encode_abi(
-                    ['address', 'bytes'],
-                    [
-                        all_bnb_strat_addr[goblin_addr],
-                        eth_abi.encode_abi(['address', 'uint'], [tokens_for_goblin[goblin_addr], 0])
-                    ]
-                ), 
-                {'from': alice, 'value': '1 ether'}
-            )
-            assert False, 'the above command should be reverted'
-        except Exception as err:
-            print('got error as expect!!!')
-            assert "unapproved work strategy" in str(err), (
-                f'incorrect msg error; got {err}'
-            )
-            
-    print('execute addTwoSidesOptimal strategy; expect error')
-    for goblin_addr in goblin_v2_list:
-        print('check', goblin_addr)
-        try:
-            bank.work(
-                0,
-                goblin_addr,
-                0,
-                0,
-                eth_abi.encode_abi(
-                    ['address', 'bytes'],
-                    [
-                        add_two_side_opt_strat_addr[goblin_addr],
-                        eth_abi.encode_abi(['address', 'uint', 'uint'], [tokens_for_goblin[goblin_addr], 0, 0])
-                    ]
-                ), 
-                {'from': alice, 'value': '1 ether'}
-            )
-            assert False, 'the above command should be reverted'
-        except Exception as err:
-            print('got error as expect!!!')
-            assert "unapproved work strategy" in str(err), (
-                f'incorrect msg error; got {err}'
-            )
+    # print('execute addTwoSidesOptimal strategy; expect error')
+    # for goblin_addr in goblin_v2_list:
+    #     print('check', goblin_addr)
+    #     try:
+    #         bank.work(
+    #             0,
+    #             goblin_addr,
+    #             0,
+    #             0,
+    #             eth_abi.encode_abi(
+    #                 ['address', 'bytes'],
+    #                 [
+    #                     add_two_side_opt_strat_addr[goblin_addr],
+    #                     eth_abi.encode_abi(['address', 'uint', 'uint'], [tokens_for_goblin[goblin_addr], 0, 0])
+    #                 ]
+    #             ),
+    #             {'from': alice, 'value': '1 ether'}
+    #         )
+    #         assert False, 'the above command should be reverted'
+    #     except Exception as err:
+    #         print('got error as expect!!!')
+    #         assert "unapproved work strategy" in str(err), (
+    #             f'incorrect msg error; got {err}'
+    #         )
 
-    print('check reinvest')
-    for goblin_addr in goblin_v2_list:
-        print('check', goblin_addr)
-        tx = goblins[goblin_addr].reinvest({'from': alice})
+    # print('check reinvest')
+    # for goblin_addr in goblin_v2_list:
+    #     print('check', goblin_addr)
+    #     tx = goblins[goblin_addr].reinvest({'from': alice})
 
-    print('End of testing!!!')
-
-    
+    # print('End of testing!!!')
