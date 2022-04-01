@@ -172,4 +172,6 @@ interface IAny {
   function nextPositionID() external view returns (uint);
 
   function pid() external view returns (uint);
+
+  function transferOwnership(address _newOwner) external returns (bool);
 }
