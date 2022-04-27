@@ -1,5 +1,9 @@
-from brownie import accounts, interface
+from brownie import accounts, interface, rpc, network
 from ape_safe import ApeSafe
+
+if not rpc.is_active():
+    network.priority_fee("1 gwei")
+    network.max_fee("60 gwei")
 
 ownable_contracts = [
     "0x67b66c99d3eb37fa76aa3ed1ff33e8e39f0b9c7a",  # bank
