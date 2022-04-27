@@ -33,6 +33,8 @@ goblins = [
     "0xa0aa119e0324d864831c24b78e85927526e42d52",
     "0x62e32e6ebeabf776b59f5dfb9b364779c3a64137",
     "0x567f4a45d45945a75898be4cad299a8f32c86d08",
+    "0x3cab9d2ca781c6b6cf8d29bfb450aa4fffcae854",
+    "0xd6d8f5e06f655ff01bb3b08dd65946babbfec351",
 ]
 
 strats = [
@@ -68,6 +70,8 @@ strats = [
     "0xb8bd068dd234d9cc06763cfbcea53ecd60e82b8d",
     "0xa39844d2d8fb827693d3f8e96abd8596f8ebaede",
     "0xf8935dbd2877ac69e25fbdae3003bff391ca0357",
+    "0xe15e4a5c2b6ea78cc12e7d320b732924b64e6137",
+    "0xe47b5464a7860efd6486094f91c034a180108424",
 ]
 
 all_governable_contracts = [
