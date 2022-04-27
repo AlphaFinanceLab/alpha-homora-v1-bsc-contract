@@ -19,7 +19,8 @@ def main():
 
     for contract_addr in all_governable_contracts:
         contract = Governable.at(contract_addr)
-        contract.acceptGovernor({"from": exec_account})
+        receipt = contract.acceptGovernor({"from": exec_account})
+        final_receipts.append(receipt)
 
     # if submit safe transaction, skip running tests
     if is_submit:
