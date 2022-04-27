@@ -1,6 +1,12 @@
-from brownie import accounts, ProxyAdminImpl, interface, Governable, Bank
+from brownie import accounts, interface, network, rpc
+from brownie import ProxyAdminImpl, Governable, Bank
 from brownie.exceptions import VirtualMachineError
 from ape_safe import ApeSafe
+from scripts.utils import SAFE_BSC_EXEC_ADDR
+
+
+if not rpc.is_active():
+    network.gas_price("5 gwei")
 
 ownable_contracts = [
     "0x70df43522d3a7332310b233de763758adca14961",  # bank config
@@ -81,14 +87,13 @@ all_ownable_contracts = ownable_contracts + goblins + strats
 
 
 def main():
-    # FIXME: fix exec address
-    exec_safe = ApeSafe("0x6be987c6d72e25F02f6f061F94417d83a6Aa13fC")
+    exec_safe = ApeSafe(SAFE_BSC_EXEC_ADDR)
     exec_account = exec_safe.account
+
+    # TODO: fix eoa address
     eoa_account = accounts.at("0x4D4DA0D03F6f087697bbf13378a21E8ff6aF1a58", force=True)
 
     proxy_admin = ProxyAdminImpl.at("0x74168a07c24f9d40ccf3d16ad18df9caa7b50841")
-
-    ownable_contracts.extend(goblins + strats)
 
     proxy_admin.transferOwnership(exec_account, {"from": eoa_account})
 
@@ -117,9 +122,9 @@ def main():
         )
     except VirtualMachineError as e:
         assert e.revert_msg == "Ownable: caller is not the owner"
-        print(e)
+        print("expect error")
 
-    for contract_addr in ownable_contracts:
+    for contract_addr in all_ownable_contracts:
         contract = interface.IAny(contract_addr)
         assert contract.owner() == exec_account
 
