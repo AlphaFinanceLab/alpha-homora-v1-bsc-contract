@@ -1,5 +1,4 @@
-from brownie import accounts, interface, Governable, ConfigurableInterestBankConfig
-from brownie.exceptions import VirtualMachineError
+from brownie import accounts, interface
 from ape_safe import ApeSafe
 
 ownable_contracts = [
@@ -51,6 +50,9 @@ goblins = [
     "0x18712bcb987785d6679134abc7cddee669ec35ca",
     "0xee8f4e4b13c610bfa2c65d968ba1d5263d640ce6",
     "0xbd95cfef698d4d582e66110475ec7e4e21120e4a",
+    "0x9eed7274ea4b614acc217e46727d377f7e6f9b24",
+    "0x4354e09bb45ee1edc5ad97b44fa3682ef7e6c77e",
+    "0xa4bc927300f174155b95d342488cb2431e7e864e",
 ]
 strats = [
     "0xb55f46d5bd3e6609b39707afbabd8a61ffed9d0a",
@@ -100,6 +102,10 @@ strats = [
     "0xd2dadd442727b7172ddab1b73b726a1ef9dbb51f",
     "0xd84f554a24977cf7bda60fc11d6358c432007814",
     "0x483747e40bdb6ab28b4b4ea73b9d62d4d44c509e",
+    "0x81796c4602B82054a727527CD16119807b8C7608",
+    "0x14f66F8c283D004f4195CD041746B6b5fA823e16",
+    "0xf047fbea321de61426437d8ebf5598d7b2673aa6",
+    "0x6b4f168e91452a0ac2cff9f4f745f5efad09861c",
 ]
 
 all_ownable_contracts = ownable_contracts + goblins + strats
