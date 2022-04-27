@@ -123,11 +123,11 @@ all_ownable_contracts = ownable_contracts + goblins + strats
 def main():
     # FIXME: fix exec address
     exec_account = ApeSafe("0x6be987c6d72e25F02f6f061F94417d83a6Aa13fC")
-    dev_account = accounts.at("0xB593d82d53e2c187dc49673709a6E9f806cdC835", force=True)
+    eoa_account = accounts.at("0xB593d82d53e2c187dc49673709a6E9f806cdC835", force=True)
 
     for contract_addr in all_ownable_contracts:
         contract = interface.IAny(contract_addr)
-        contract.transferOwnership(exec_account, {"from": dev_account})
+        contract.transferOwnership(exec_account, {"from": eoa_account})
 
     # testing
     for contract_addr in all_ownable_contracts:
