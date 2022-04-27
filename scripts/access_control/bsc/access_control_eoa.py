@@ -82,6 +82,7 @@ strats = [
 
 all_governable_contracts = [
     "0x3bb5f6285c312fc7e1877244103036ebbeda193d",  # bank
+    "0x35CfaCC93244fc94d26793CD6e68F59976380B3e",  # bank (impl)
 ]
 all_ownable_contracts = ownable_contracts + goblins + strats
 
