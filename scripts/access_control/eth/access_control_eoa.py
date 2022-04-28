@@ -1,5 +1,6 @@
 from brownie import accounts, interface, rpc, network
 from ape_safe import ApeSafe
+from scripts.utils import SAFE_ETH_EXEC_ADDR
 
 if not rpc.is_active():
     network.priority_fee("1 gwei")
@@ -116,9 +117,7 @@ strats = [
     "0xe992e83b268f63ee508c6d292a54dff91c1eb57f",
     "0x942d9e12bc440fe9c374e67dfb0328fb1fbfcd3d",
     "0x58cc5c8e863759ba2aaae2bcaee84ce22404b5e7",
-    "0x81796c4602b82054a727527cd16119807b8c7608",
     "0x466c427cc426a88ae2a596ab48a085dd72258354",
-    "0x14f66f8c283d004f4195cd041746b6b5fa823e16",
 ]
 
 all_ownable_contracts = ownable_contracts + goblins + strats
@@ -126,7 +125,7 @@ all_ownable_contracts = ownable_contracts + goblins + strats
 
 def main():
     # FIXME: fix exec address
-    exec_account = ApeSafe("0x6be987c6d72e25F02f6f061F94417d83a6Aa13fC")
+    exec_account = ApeSafe(SAFE_ETH_EXEC_ADDR)
     eoa_account = accounts.at("0xB593d82d53e2c187dc49673709a6E9f806cdC835", force=True)
 
     for contract_addr in all_ownable_contracts:
